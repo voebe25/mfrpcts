@@ -1,0 +1,30 @@
+       01 BI001-PS0001-REC.                                             00010000
+          05 W01-ID                            PIC X(13).               00020000
+          05 FILLER                            PIC X(01).               00030000
+          05 W01-NAME                          PIC A(32).               00040000
+          05 FILLER                            PIC X(01).               00050000
+          05 W01-DOOR-NO                       PIC X(10).               00060000
+          05 FILLER                            PIC X(01).               00070000
+          05 W01-STREET                        PIC X(20).               00080000
+          05 FILLER                            PIC X(01).               00090000
+          05 W01-CITY                          PIC X(20).               00100000
+          05 FILLER                            PIC X(01).               00110000
+          05 W01-CC                            PIC A(03).               00120000
+          05 FILLER                            PIC X(01).               00130000
+          05 W01-PIN                           PIC 9(06).               00140000
+          05 FILLER                            PIC X(01).               00150000
+          05 W01-MOB                           PIC 9(10).               00160000
+          05 FILLER                            PIC X(01).               00170000
+          05 W01-DOB                           PIC 9(02)/9(02)/9(04).   00180000
+          05 FILLER                            PIC X(01).               00190000
+          05 W01-GENDER                        PIC A(01).               00200000
+          05 FILLER                            PIC X(01).               00210000
+          05 W01-UID                           PIC X(10).               00220000
+          05 FILLER                            PIC X(01).               00230000
+          05 W01-EOD                           PIC 9(02)/9(02)/9(04).   00240000
+          05 FILLER                            PIC X(01).               00250000
+          05 W01-LPD                           PIC 9(02)/9(02)/9(04).   00260000
+          05 FILLER                            PIC X(83).               00270001
+                                                                        00280000
+                                                                        00290000
+

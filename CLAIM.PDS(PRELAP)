@@ -1,0 +1,48 @@
+      ******************************************************************
+      * DCLGEN TABLE(PREMIUM_LAPSED)                                   *
+      *        LIBRARY(TCHN007.CLAIM.DB2(PRELAP))                      *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+           EXEC SQL DECLARE PREMIUM_LAPSED TABLE
+           ( APPLICANT_ID2                  CHAR(13),
+             APPLICANT_NAME2                CHAR(32) NOT NULL,
+             DOOR_NO2                       CHAR(10) NOT NULL,
+             STREET2                        CHAR(20) NOT NULL,
+             CITY2                          CHAR(20) NOT NULL,
+             COUNTRY_CODE2                  CHAR(3) NOT NULL,
+             PIN2                           DECIMAL(6, 0) NOT NULL,
+             MOBILE2                        DECIMAL(10, 0) NOT NULL,
+             DATE_OF_BIRTH2                 CHAR(10) NOT NULL,
+             GENDER2                        CHAR(1) NOT NULL,
+             UNIQUE_ID2                     CHAR(10) NOT NULL,
+             ENROLLED_DATE2                 CHAR(10) NOT NULL,
+             PREMIUM_DATE2                  CHAR(10) NOT NULL,
+             LAPSE_INDICATOR                CHAR(1) NOT NULL,
+             POLICY_LAPSED_TIMES            DECIMAL(1, 0) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE PREMIUM_LAPSED                     *
+      ******************************************************************
+       01  DCLPREMIUM-LAPSED.
+           10 APPLICANT-ID2        PIC X(13).
+           10 APPLICANT-NAME2      PIC X(32).
+           10 DOOR-NO2             PIC X(10).
+           10 STREET2              PIC X(20).
+           10 CITY2                PIC X(20).
+           10 COUNTRY-CODE2        PIC X(3).
+           10 PIN2                 PIC S9(6)V USAGE COMP-3.
+           10 MOBILE2              PIC S9(10)V USAGE COMP-3.
+           10 DATE-OF-BIRTH2       PIC X(10).
+           10 GENDER2              PIC X(1).
+           10 UNIQUE-ID2           PIC X(10).
+           10 ENROLLED-DATE2       PIC X(10).
+           10 PREMIUM-DATE2        PIC X(10).
+           10 LAPSE-INDICATOR      PIC X(1).
+           10 POLICY-LAPSED-TIMES  PIC S9(1)V USAGE COMP-3.
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 15      *
+      ******************************************************************
+

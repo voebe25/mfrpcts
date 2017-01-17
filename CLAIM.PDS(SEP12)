@@ -1,0 +1,306 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID.     MFRPDB2.                                         00020000
+       ENVIRONMENT DIVISION.                                            00030000
+       INPUT-OUTPUT SECTION.                                            00040000
+       FILE-CONTROL.                                                    00050000
+           SELECT BI001-ALLWD    ASSIGN       TO ALLWDPTR               00060000
+                                 ORGANIZATION IS SEQUENTIAL             00070000
+                                 ACCESS MODE  IS SEQUENTIAL             00080000
+                                 FILE STATUS  IS W10-FS-STAT.           00090000
+                                                                        00100000
+           SELECT BI002-GRACE    ASSIGN       TO GRACEPTR               00110000
+                                 ORGANIZATION IS SEQUENTIAL             00120000
+                                 ACCESS MODE  IS SEQUENTIAL             00130000
+                                 FILE STATUS  IS W20-FS-STAT.           00140000
+                                                                        00150000
+                                                                        00160000
+       DATA DIVISION.                                                   00170000
+       FILE SECTION.                                                    00180000
+       FD BI001-ALLWD.                                                  00190000
+       01 W10-BI001-ALLWD-REC.                                          00200000
+          05 W10-ALLWD-TIME                    PIC 9(03).               00210000
+                                                                        00220000
+       FD BI002-GRACE.                                                  00230000
+       01 W20-BI002-GRACE-REC.                                          00240000
+          05 W20-GRACE-TIME                    PIC 9(03).               00250000
+                                                                        00260000
+       WORKING-STORAGE SECTION.                                         00270000
+           EXEC SQL INCLUDE SQLCA                                       00280000
+           END-EXEC                                                     00290000
+                                                                        00300000
+           EXEC SQL INCLUDE MFRP@PP                                     00310000
+           END-EXEC                                                     00320000
+                                                                        00330000
+           EXEC SQL INCLUDE MFRP@TP                                     00340000
+           END-EXEC                                                     00350000
+                                                                        00360000
+           EXEC SQL INCLUDE MFRP@CP                                     00370000
+           END-EXEC                                                     00380000
+                                                                        00390000
+           EXEC SQL                                                     00400000
+             DECLARE CS-CUR1 WITH HOLD FOR                              00410000
+             SELECT * FROM PREMIUM_PAID                                 00420000
+           END-EXEC                                                     00430000
+                                                                        00440000
+       01 W10-FS-STAT                    PIC  9(02).                    00450000
+          88 C10W-SUCCESS                             VALUE 00.         00460000
+          88 C10W-NORECORD                            VALUE 10.         00470000
+                                                                        00480000
+       01 W20-FS-STAT                    PIC  9(02).                    00490000
+          88 C20W-SUCCESS                             VALUE 00.         00500000
+          88 C20W-NORECORD                            VALUE 10.         00510000
+                                                                        00520000
+       01 W01-SQLCODE                    PIC S9(03).                    00530000
+          88 C01W-SUCCESS                             VALUE +000.       00540000
+          88 C01W-NORECORD                            VALUE +100.       00550000
+          88 C01W-DEADLOCK                            VALUE -911 -913.  00560000
+                                                                        00570000
+       01 W01-ERROR.                                                    00580000
+          05 W01-ERROR-LEN               PIC S9(04) COMP VALUE +800.    00590000
+          05 W01-ERROR-TXT               PIC X(80) OCCURS 10 TIMES.     00600000
+                                                                        00610000
+       01 W01-ERR-LEN                    PIC S9(09) COMP VALUE +80.     00620000
+       01 W01-SUB                        PIC 9(02).                     00630000
+       01 W01-NULL-IND                   PIC S9(04) COMP.               00640000
+                                                                        00650000
+       01 W01-CURRENT-DATE.                                             00660000
+          05 W01-CURRENT-YEAR            PIC 9(04).                     00670000
+          05 W01-CURRENT-MONTH           PIC 9(02).                     00680000
+          05 W01-CURRENT-DAY             PIC 9(02).                     00690000
+                                                                        00700000
+       01 W01-EXPECTED-DATE.                                            00710000
+          05 W01-EXPECTED-YEAR           PIC 9(04).                     00720000
+          05 W01-EXPECTED-MONTH          PIC 9(02).                     00730000
+          05 W01-EXPECTED-DAY            PIC 9(02).                     00740000
+                                                                        00750000
+       01 W01-INTEGER                    PIC 9(08).                     00760000
+       01 W02-INTEGER                    PIC 9(08).                     00770000
+       PROCEDURE DIVISION.                                              00780000
+       0000-MAIN-PARA.                                                  00790000
+           PERFORM 1000-INITIALIZE-PARA                                 00800000
+              THRU 1000-INITIALIZE-PARA                                 00810000
+                                                                        00820000
+           PERFORM 2000-PROCESS-PARA                                    00830000
+              THRU 2000-PROCESS-PARA                                    00840000
+                                                                        00850000
+           PERFORM 9000-TERMINATE-PARA                                  00860000
+              THRU 9000-TERMINATE-PARA                                  00870000
+       0000-MAIN-PARA-EXIT.                                             00880000
+           EXIT.                                                        00890000
+                                                                        00900000
+       1000-INITIALIZE-PARA.                                            00910000
+           MOVE FUNCTION CURRENT-DATE TO W01-CURRENT-DATE               00920000
+           INITIALIZE W01-SQLCODE                                       00930000
+                      W01-NULL-IND                                      00940000
+       1000-INITIALIZE-PARA-EXIT.                                       00950000
+           EXIT.                                                        00960000
+                                                                        00970000
+       2000-PROCESS-PARA.                                               00980000
+           PERFORM 3000-OPEN-CURSOR-PARA                                00990000
+              THRU 3000-OPEN-CURSOR-PARA-EXIT                           01000000
+                                                                        01010000
+           PERFORM 3100-OPEN-FILE-PARA                                  01020000
+              THRU 3100-OPEN-FILE-PARA-EXIT                             01030000
+                                                                        01040000
+           PERFORM 4000-FETCH-CURSOR-PARA                               01050000
+              THRU 4000-FETCH-CURSOR-PARA-EXIT                          01060000
+           UNTIL NOT C01W-SUCCESS                                       01070000
+                                                                        01080000
+           PERFORM 8000-CLOSE-CURSOR-PARA                               01090000
+              THRU 8000-CLOSE-CURSOR-PARA-EXIT                          01100000
+                                                                        01110000
+           PERFORM 8100-CLOSE-FILE-PARA                                 01120000
+              THRU 8100-CLOSE-FILE-PARA-EXIT                            01130000
+       2000-PROCESS-PARA-EXIT.                                          01140000
+           EXIT.                                                        01150000
+                                                                        01160000
+       2100-DSNTIAR-PARA.                                               01170000
+           CALL 'DSNTIAR' USING SQLCA                                   01180000
+                                W01-ERROR                               01190000
+                                W01-ERR-LEN                             01200000
+           PERFORM VARYING W01-SUB FROM 1 BY 1 UNTIL W01-SUB > 10       01210000
+               DISPLAY W01-ERROR-TXT ( W01-SUB )                        01220000
+           END-PERFORM.                                                 01230000
+       2100-DSNTIAR-PARA-EXIT.                                          01240000
+           EXIT.                                                        01250000
+                                                                        01260000
+       3000-OPEN-CURSOR-PARA.                                           01270000
+           EXEC SQL                                                     01280000
+               OPEN CS-CUR1                                             01290000
+           END-EXEC                                                     01300000
+           MOVE SQLCODE TO W01-SQLCODE                                  01310000
+           IF ( C01W-SUCCESS )                                          01320000
+              CONTINUE                                                  01330000
+           ELSE IF ( C01W-DEADLOCK )                                    01340000
+              DISPLAY 'DEADLOCK IN OPENING CURSOR ' W01-SQLCODE         01350000
+           ELSE                                                         01360000
+              PERFORM 2100-DSNTIAR-PARA                                 01370000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            01380000
+           END-IF.                                                      01390000
+       3000-OPEN-CURSOR-PARA-EXIT.                                      01400000
+           EXIT.                                                        01410000
+                                                                        01420000
+       3100-OPEN-FILE-PARA.                                             01430000
+           OPEN INPUT BI001-ALLWD                                       01440000
+           IF ( C10W-SUCCESS )                                          01450000
+              CONTINUE                                                  01460000
+           ELSE SQLCODE TO W01-SQLCODE                                  01470000
+              DISPLAY ' ERROR IN OPENING ALLOWED FILE ' W10-FS-STAT     01480000
+           END-IF.                                                      01490000
+           ELSE IF ( C01W-DEADLOCK )                                    01500000
+              DISPLAY 'DEADLOCK IN OPENING CURSOR ' W01-SQLCODE         01510000
+           ELSE                                                         01520000
+              PERFORM 2100-DSNTIAR-PARA                                 01530000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            01540000
+           END-IF.                                                      01550000
+       3000-OPEN-CURSOR-PARA-EXIT.                                      01560000
+           EXIT.                                                        01570000
+                                                                        01580000
+       4000-FETCH-CURSOR-PARA.                                          01590000
+           EXEC SQL                                                     01600000
+               FETCH CS-CUR1 INTO                                       01610000
+                            :APPLICANT-ID                               01620000
+                           ,:APPLICANT-NAME                             01630000
+                           ,:DOOR-NO                                    01640000
+                           ,:STREET                                     01650000
+                           ,:CITY                                       01660000
+                           ,:COUNTRY-CODE                               01670000
+                           ,:PIN                                        01680000
+                           ,:MOBILE                                     01690000
+                           ,:DATE-OF-BIRTH                              01700000
+                           ,:GENDER                                     01710000
+                           ,:UNIQUE-ID                                  01720000
+                           ,:ENROLLED-DATE                              01730000
+                           ,:LAST-PREMIUM-DATE                          01740000
+           END-EXEC                                                     01750000
+           MOVE SQLCODE TO W01-SQLCODE                                  01760000
+           IF ( C01W-SUCCESS )                                          01770000
+              PERFORM 4100-UPDATE-TEMP-PARA                             01780000
+                 THRU 4100-UPDATE-TEMP-PARA-EXIT                        01790000
+           ELSE IF ( C01W-NORECORD )                                    01800000
+              CONTINUE                                                  01810000
+           ELSE IF ( C01W-DEADLOCK )                                    01820000
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE        01830000
+           ELSE                                                         01840000
+              PERFORM 2100-DSNTIAR-PARA                                 01850000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            01860000
+           END-IF.                                                      01870000
+       4000-FETCH-CURSOR-PARA-CURSOR.                                   01880000
+           EXIT.                                                        01890000
+                                                                        01900000
+       4100-UPDATE-TEMP-PARA.                                           01910000
+                                                                        01920000
+           EXEC SQL                                                     01930000
+               SELECT                                                   01940000
+                      APPLICANT_ID3                                     01950000
+                     ,PAID_DATE3                                        01960000
+               INTO                                                     01970000
+                     :APPLICANT-ID3                                     01980000
+                    ,:PAID-DATE3                                        01990000
+               FROM                                                     02000000
+                      PAID_CUSTOMERS                                    02010000
+           END-EXEC                                                     02020000
+           IF ( C01W-SUCCESS )                                          02030000
+              CONTINUE                                                  02040000
+           ELSE IF ( C01W-DEADLOCK )                                    02050000
+              DISPLAY 'DEADLOCK IN SELECTING PAID_CUSTOMERS ' SQLCODE   02060000
+           ELSE                                                         02070000
+              PERFORM 2100-DSNTIAR-PARA                                 02080000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            02090000
+           END-IF.                                                      02100000
+           MOVE APPLICANT-ID      TO   APPLICANT-ID1                    02110000
+           MOVE APPLICANT-NAME    TO   APPLICANT-NAME1                  02120000
+           MOVE DOOR-NO           TO   DOOR-NO1                         02130000
+           MOVE STREET            TO   STREET1                          02140000
+           MOVE CITY              TO   CITY1                            02150000
+           MOVE COUNTRY-CODE      TO   COUNTRY-CODE1                    02160000
+           MOVE PIN               TO   PIN1                             02170000
+           MOVE MOBILE            TO   MOBILE1                          02180000
+           MOVE DATE-OF-BIRTH     TO   DATE-OF-BIRTH1                   02190000
+           MOVE GENDER            TO   GENDER1                          02200000
+           MOVE UNIQUE-ID         TO   UNIQUE-ID1                       02210000
+           MOVE ENROLLED-DATE     TO   ENROLLED-DATE1                   02220000
+           MOVE LAST-PREMIUM-DATE TO   LAST-PREMIUM-DATE1               02230000
+           MOVE PAID-DATE3        TO   PAID-DATE1                       02240000
+                                                                        02250000
+           MOVE LAST-PREMIUM-DATE1(1:4) TO W01-EXPECTED-DATE(1:4)       02260000
+           MOVE LAST-PREMIUM-DATE1(6:2) TO W01-EXPECTED-DATE(5:2)       02270000
+           MOVE LAST-PREMIUM-DATE1(9:2) TO W01-EXPECTED-DATE(7:2)       02280000
+                                                                        02290000
+           COMPUTE W01-INTEGER = FUNCTION INTEGER-OF-DATE               02300000
+                                 W01-EXPECTED-DATE                      02310000
+                                                                        02320000
+           COMPUTE W01-EXPECTED-DATE = W01-INTEGER + W10-ALLWD-TIME     02330000
+           COMPUTE W01-EXPECTED-DATE = FUNCTION DATE-OF-INTEGER         02340000
+           (W01-EXPECTED-DATE)                                          02350000
+                                                                        02360000
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)           02370000
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)           02380000
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)           02390000
+                                                                        02400000
+           EXEC SQL                                                     02410000
+               INSERT INTO                                              02420000
+                      PREMIUM_PAID_TEMP                                 02430000
+               VALUES(                                                  02440000
+                      APPLICANT_ID1                                     02450000
+                     ,APPLICANT_NAME1                                   02460000
+                     ,DOOR_NO1                                          02470000
+                     ,STREET1                                           02480000
+                     ,CITY1                                             02490000
+                     ,COUNTRY_CODE1                                     02500000
+                     ,PIN1                                              02510000
+                     ,MOBILE1                                           02520000
+                     ,DATE_OF_BIRTH1                                    02530000
+                     ,GENDER1                                           02540000
+                     ,UNIQUE_ID1                                        02550000
+                     ,ENROLLED_DATE1                                    02560000
+                     ,LAST_PREMIUM_DATE1                                02570000
+                     ,EXEPECTED_DATE1                                   02580000
+                     ,PAID_DATE1 : W01-NULL-IND                         02590000
+                     )                                                  02600000
+           END-EXEC                                                     02610000
+           IF ( C01W-SUCCESS )                                          02620000
+              EXEC SQL                                                  02630000
+                  COMMIT                                                02640000
+              END-EXEC                                                  02650000
+              PERFORM 4200-DATE-DIFF-PARA                               02660000
+                 THRU 4200-DATE-DIFF-PARA-EXIT                          02670000
+           ELSE IF ( C01W-DEADLOCK )                                    02680000
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE        02690000
+           ELSE                                                         02700000
+              PERFORM 2100-DSNTIAR-PARA                                 02710000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            02720000
+           END-IF.                                                      02730000
+       4100-UPDATE-TEMP-PARA-EXIT.                                      02740000
+           EXIT.                                                        02750000
+                                                                        02760000
+       4200-DATE-DIFF-PARA.                                             02770000
+      *    MOVE FUNCTION CURRENT-DATE TO W01-CURRENT-DATE               02780000
+      *    COMPUTE W01-INTEGER = FUNCTION INTEGER-OF-DATE               02790000
+      *                          W01-EXPECTED-DATE                      02800000
+      *    COMPUTE W02-INTEGER = FUNCTION INTEGER-OF-DATE               02810000
+      *                          W01-CURRENT-DATE                       02820000
+      *    IF ( W02-INTEGER <= W01-INTEGER )                            02830000
+      *       CONTINUE                                                  02840000
+      *    ELSE                                                         02850000
+       8000-CLOSE-CURSOR-PARA.                                          02860000
+           EXEC SQL                                                     02870000
+               CLOSE CS-CUR1                                            02880000
+           END-EXEC                                                     02890000
+           MOVE SQLCODE TO W01-SQLCODE                                  02900000
+           IF ( C01W-SUCCESS )                                          02910000
+              CONTINUE                                                  02920000
+           ELSE IF ( C01W-DEADLOCK )                                    02930000
+              DISPLAY 'DEADLOCK IN CLOSING CURSOR ' W01-SQLCODE         02940000
+           ELSE                                                         02950000
+              PERFORM 2100-DSNTIAR-PARA                                 02960000
+                 THRU 2100-DSNTIAR-PARA-EXIT                            02970000
+           END-IF.                                                      02980000
+       8000-CLOSE-CURSOR-PARA-EXIT.                                     02990000
+           EXIT.                                                        03000000
+                                                                        03010000
+       9000-TERMINATE-PARA.                                             03020000
+           STOP RUN.                                                    03030000
+       9000-TERMINATE-PARA-EXIT.                                        03040000
+           EXIT.                                                        03050000
+

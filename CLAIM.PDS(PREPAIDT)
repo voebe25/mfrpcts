@@ -1,0 +1,48 @@
+      ******************************************************************
+      * DCLGEN TABLE(PREMIUM_PAID_TEMP)                                *
+      *        LIBRARY(TCHN007.CLAIM.DB2(PREPAIDT))                    *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+           EXEC SQL DECLARE PREMIUM_PAID_TEMP TABLE
+           ( APPLICANT_ID1                  CHAR(13) NOT NULL,
+             APPLICANT_NAME1                CHAR(32) NOT NULL,
+             DOOR_NO1                       CHAR(10) NOT NULL,
+             STREET1                        CHAR(20) NOT NULL,
+             CITY1                          CHAR(20) NOT NULL,
+             COUNTRY_CODE1                  CHAR(3) NOT NULL,
+             PIN1                           DECIMAL(6, 0) NOT NULL,
+             MOBILE1                        DECIMAL(10, 0) NOT NULL,
+             DATE_OF_BIRTH1                 CHAR(10) NOT NULL,
+             GENDER1                        CHAR(1) NOT NULL,
+             UNIQUE_ID1                     CHAR(10) NOT NULL,
+             ENROLLED_DATE1                 CHAR(10) NOT NULL,
+             LAST_PREMIUM_DATE1             CHAR(10) NOT NULL,
+             EXPECTED_DATE1                 CHAR(10) NOT NULL,
+             PAID_DATE1                     CHAR(10)
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE PREMIUM_PAID_TEMP                  *
+      ******************************************************************
+       01  DCLPREMIUM-PAID-TEMP.
+           10 APPLICANT-ID1        PIC X(13).
+           10 APPLICANT-NAME1      PIC X(32).
+           10 DOOR-NO1             PIC X(10).
+           10 STREET1              PIC X(20).
+           10 CITY1                PIC X(20).
+           10 COUNTRY-CODE1        PIC X(3).
+           10 PIN1                 PIC S9(6)V USAGE COMP-3.
+           10 MOBILE1              PIC S9(10)V USAGE COMP-3.
+           10 DATE-OF-BIRTH1       PIC X(10).
+           10 GENDER1              PIC X(1).
+           10 UNIQUE-ID1           PIC X(10).
+           10 ENROLLED-DATE1       PIC X(10).
+           10 LAST-PREMIUM-DATE1   PIC X(10).
+           10 EXPECTED-DATE1       PIC X(10).
+           10 PAID-DATE1           PIC X(10).
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 15      *
+      ******************************************************************
+

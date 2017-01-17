@@ -1,0 +1,1120 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.     MFRP.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT BI001-ALLWD    ASSIGN TO ALLWDPTR
+                                 ORGANIZATION IS SEQUENTIAL
+                                 ACCESS MODE  IS SEQUENTIAL
+                                 FILE STATUS  IS W10-FS-STAT.
+
+           SELECT BI002-GRACE    ASSIGN TO GRACEPTR
+                                 ORGANIZATION IS SEQUENTIAL
+                                 ACCESS MODE  IS SEQUENTIAL
+                                 FILE STATUS  IS W20-FS-STAT.
+
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       FD BI001-ALLWD.
+       01 W10-BI001-ALLWD-REC.
+          05 W10-ALLWD-TIME                    PIC 9(03).
+          05 FILLER                            PIC X(77).
+
+       FD BI002-GRACE.
+       01 W20-BI002-GRACE-REC.
+          05 W20-GRACE-TIME                    PIC 9(03).
+          05 FILLER                            PIC X(77).
+
+       WORKING-STORAGE SECTION.
+           EXEC SQL INCLUDE SQLCA
+           END-EXEC
+
+           EXEC SQL INCLUDE PAID
+           END-EXEC
+
+           EXEC SQL INCLUDE TEMPAID
+           END-EXEC
+
+           EXEC SQL INCLUDE PAIDCUST
+           END-EXEC
+
+           EXEC SQL INCLUDE POLAPS
+           END-EXEC
+
+           EXEC SQL INCLUDE POLAPTEM
+           END-EXEC
+
+           EXEC SQL
+             DECLARE CS-CUR1 CURSOR WITH HOLD FOR
+             SELECT * FROM PREMIUM_PAID
+           END-EXEC
+
+       01 W10-FS-STAT                    PIC  9(02).
+          88 C10W-SUCCESS                             VALUE 00.
+          88 C10W-NORECORD                            VALUE 10.
+
+       01 W20-FS-STAT                                PIC  9(02).
+          88 C20W-SUCCESS                             VALUE 00.
+          88 C20W-NORECORD                            VALUE 10.
+
+       01 W01-SQLCODE1                                PIC S9(03).
+
+       01 W01-SQLCODE                                 PIC S9(03).
+          88 C01W-SUCCESS                             VALUE +000.
+          88 C01W-NORECORD                            VALUE +100.
+          88 C01W-DUPLICATE                           VALUE -803.
+          88 C01W-DEADLOCK                            VALUE -911 -913.
+
+       01 W01-ERROR.
+          05 W01-ERROR-LEN               PIC S9(04) COMP VALUE +800.
+          05 W01-ERROR-TXT               PIC X(80) OCCURS 10 TIMES.
+
+       01 W01-ERR-LEN                    PIC S9(09) COMP VALUE +80.
+       01 W01-SUB                        PIC 9(02).
+       01 W01-NULL-IND01                 PIC S9(04) COMP.
+
+       01  WS-CURRENT-DATE-DATA.
+       05  WS-CURRENT-DATE.
+           10  WS-CURRENT-YEAR           PIC 9(04).
+           10  WS-CURRENT-MONTH          PIC 9(02).
+           10  WS-CURRENT-DAY            PIC 9(02).
+       05  WS-CURRENT-TIME.
+           10  WS-CURRENT-HOURS          PIC 9(02).
+           10  WS-CURRENT-MINUTE         PIC 9(02).
+           10  WS-CURRENT-SECOND         PIC 9(02).
+           10  WS-CURRENT-MILLISECONDS   PIC 9(02).
+
+       01 W01-CURRENT-DATE               PIC 9(08).
+       01 W01-EXPECTED-DATE              PIC 9(08).
+       01 W01-PAY-DATE                   PIC 9(08).
+
+      *EXPECTED DATE LOCAL VAR
+       01 W01-INTEGER                    PIC 9(08).
+       01 W04-INTEGER                    PIC 9(08).
+
+      *PAID DATE LOCAL VAR
+       01 W02-INTEGER                    PIC 9(08).
+
+      *CURRENT DATE LOCAL VAR
+       01 W03-INTEGER                    PIC 9(08).
+       PROCEDURE DIVISION.
+
+       0000-MAIN-PARA.
+
+           PERFORM 1000-INITIALIZE-PARA
+              THRU 1000-INITIALIZE-PARA
+
+           PERFORM 2000-PROCESS-PARA
+              THRU 2000-PROCESS-PARA
+
+           PERFORM 9000-TERMINATE-PARA
+              THRU 9000-TERMINATE-PARA.
+
+       0000-MAIN-PARA-EXIT.
+           EXIT.
+
+
+
+       1000-INITIALIZE-PARA.
+
+           MOVE FUNCTION CURRENT-DATE TO WS-CURRENT-DATE-DATA
+           MOVE WS-CURRENT-DATE-DATA(1:8) TO W01-CURRENT-DATE
+           INITIALIZE W01-SQLCODE
+                      W01-NULL-IND01.
+
+       1000-INITIALIZE-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       2000-PROCESS-PARA.
+
+           PERFORM 3000-OPEN-CURSOR-PARA
+              THRU 3000-OPEN-CURSOR-PARA-EXIT
+
+           PERFORM 3100-OPEN-FILE-PARA
+              THRU 3100-OPEN-FILE-PARA-EXIT
+
+           PERFORM 3200-READ-FILE-PARA
+              THRU 3200-READ-FILE-PARA-EXIT
+
+           PERFORM 4000-FETCH-CURSOR-PARA
+              THRU 4000-FETCH-CURSOR-PARA-EXIT
+           UNTIL NOT C01W-SUCCESS
+
+           PERFORM 8000-CLOSE-CURSOR-PARA
+              THRU 8000-CLOSE-CURSOR-PARA-EXIT
+
+           PERFORM 8100-CLOSE-FILE-PARA
+              THRU 8100-CLOSE-FILE-PARA-EXIT.
+
+       2000-PROCESS-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       2100-DSNTIAR-PARA.
+
+           CALL 'DSNTIAR' USING SQLCA
+                                W01-ERROR
+                                W01-ERR-LEN
+           PERFORM VARYING W01-SUB FROM 1 BY 1 UNTIL W01-SUB > 10
+               DISPLAY W01-ERROR-TXT ( W01-SUB )
+           END-PERFORM.
+
+       2100-DSNTIAR-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       3000-OPEN-CURSOR-PARA.
+
+           EXEC SQL
+               OPEN CS-CUR1
+           END-EXEC
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN OPENING CURSOR ' W01-SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       3000-OPEN-CURSOR-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       3100-OPEN-FILE-PARA.
+
+           OPEN INPUT BI001-ALLWD
+           IF ( C10W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY ' ERROR IN OPENING ALLOWED FILE ' W10-FS-STAT
+           END-IF.
+           OPEN INPUT BI002-GRACE
+           IF ( C20W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY ' ERROR IN OPENING GRACE FILE ' W20-FS-STAT
+           END-IF.
+
+       3100-OPEN-FILE-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       3200-READ-FILE-PARA.
+
+           READ BI001-ALLWD
+           END-READ
+           IF ( C10W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY 'ERROR IN READING ALLWD FILE ' W10-FS-STAT
+           END-IF.
+           READ BI002-GRACE
+           END-READ
+           IF ( C20W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY 'ERROR IN READING GRACE FILE ' W20-FS-STAT
+           END-IF.
+
+       3200-READ-FILE-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       4000-FETCH-CURSOR-PARA.
+           INITIALIZE DCLPREMIUM-PAID
+                      DCLPREMIUM-PAID-TEMP
+                      DCLPAID-CUSTOMER
+                      DCLPOLICY-LAPSED
+                      DCLPOL-LAPSED-TEMP
+           EXEC SQL
+               FETCH CS-CUR1 INTO
+                          :DCLPREMIUM-PAID
+           END-EXEC
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              PERFORM 4100-UPDATE-TEMP-PARA
+                 THRU 4100-UPDATE-TEMP-PARA-EXIT
+           ELSE IF ( C01W-NORECORD )
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       4000-FETCH-CURSOR-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      SELECTING PAY DATE FROM CASHIER'S TABLE
+
+       4100-UPDATE-TEMP-PARA.
+
+           EXEC SQL
+               SELECT
+                      APPLICANT_ID3
+                     ,PAID_DATE3
+               INTO
+                     :APPLICANT-ID3
+                    ,:PAID-DATE3
+               FROM
+                      PAID_CUSTOMER
+               WHERE
+                      APPLICANT_ID3 = :APPLICANT-ID
+           END-EXEC
+           DISPLAY 'QUERY 1 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF C01W-SUCCESS OR C01W-NORECORD
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 1 ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+              PERFORM 4110-UPDATE-TEMP-PARA
+                 THRU 4110-UPDATE-TEMP-PARA-EXIT.
+
+       4100-UPDATE-TEMP-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      INSERTING VALUES INTO TEMPORARY TABLE
+
+       4110-UPDATE-TEMP-PARA.
+
+           MOVE APPLICANT-ID      TO   APPLICANT-ID1
+           MOVE APPLICANT-NAME    TO   APPLICANT-NAME1
+           MOVE DOOR-NO           TO   DOOR-NO1
+           MOVE STREET            TO   STREET1
+           MOVE CITY              TO   CITY1
+           MOVE COUNTRY-CODE      TO   COUNTRY-CODE1
+           MOVE PIN               TO   PIN1
+           MOVE MOBILE            TO   MOBILE1
+           MOVE DATE-OF-BIRTH     TO   DATE-OF-BIRTH1
+           MOVE GENDER            TO   GENDER1
+           MOVE UNIQUE-ID         TO   UNIQUE-ID1
+           MOVE ENROLLED-DATE     TO   ENROLLED-DATE1
+           MOVE LAST-PREMIUM-DATE TO   LAST-PREMIUM-DATE1
+           IF ( C01W-SUCCESS )
+              MOVE PAID-DATE3        TO   PAID-DATE1
+           ELSE
+              MOVE 'NOT PAID' TO PAID-DATE1
+           END-IF.
+           SET C01W-SUCCESS TO TRUE
+           MOVE LAST-PREMIUM-DATE1(1:4) TO W01-EXPECTED-DATE(1:4)
+           MOVE LAST-PREMIUM-DATE1(6:2) TO W01-EXPECTED-DATE(5:2)
+           MOVE LAST-PREMIUM-DATE1(9:2) TO W01-EXPECTED-DATE(7:2)
+
+           COMPUTE W01-INTEGER =
+                FUNCTION INTEGER-OF-DATE ( W01-EXPECTED-DATE )
+
+           COMPUTE W01-EXPECTED-DATE = W01-INTEGER + W10-ALLWD-TIME
+           COMPUTE W01-EXPECTED-DATE =
+                        FUNCTION DATE-OF-INTEGER ( W01-EXPECTED-DATE )
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)
+
+           EXEC SQL
+               INSERT INTO
+                      PREMIUM_PAID_TEMP
+               VALUES(
+                     :APPLICANT-ID1
+                    ,:APPLICANT-NAME1
+                    ,:DOOR-NO1
+                    ,:STREET1
+                    ,:CITY1
+                    ,:COUNTRY-CODE1
+                    ,:PIN1
+                    ,:MOBILE1
+                    ,:DATE-OF-BIRTH1
+                    ,:GENDER1
+                    ,:UNIQUE-ID1
+                    ,:ENROLLED-DATE1
+                    ,:LAST-PREMIUM-DATE1
+                    ,:EXPECTED-DATE1
+                    ,:PAID-DATE1
+                     )
+           END-EXEC
+           DISPLAY 'QUERY  2 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                  COMMIT
+              END-EXEC
+              PERFORM 4200-CHECK-PAY-PARA
+                 THRU 4200-CHECK-PAY-PARA-EXIT
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE
+           ELSE IF ( C01W-DUPLICATE )
+              CONTINUE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       4110-UPDATE-TEMP-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       4200-CHECK-PAY-PARA.
+
+           COMPUTE W03-INTEGER = FUNCTION INTEGER-OF-DATE
+                                      ( W01-CURRENT-DATE )
+              COMPUTE W01-INTEGER =
+                        FUNCTION INTEGER-OF-DATE ( W01-EXPECTED-DATE )
+           IF ( PAID-DATE1 NOT = 'NOT PAID' )
+              MOVE PAID-DATE1(1:4) TO W01-PAY-DATE(1:4)
+              MOVE PAID-DATE1(6:2) TO W01-PAY-DATE(5:2)
+              MOVE PAID-DATE1(9:2) TO W01-PAY-DATE(7:2)
+
+              DISPLAY W01-PAY-DATE
+              COMPUTE W02-INTEGER =
+                         FUNCTION INTEGER-OF-DATE ( W01-PAY-DATE )
+
+              EVALUATE TRUE
+      * ------------      PREMIUM PAID PROPERLY
+                 WHEN W02-INTEGER <= W01-INTEGER
+                      PERFORM 4300-PREMIUM-PAID-PARA
+                         THRU 4300-PREMIUM-PAID-PARA-EXIT
+
+                 WHEN W01-INTEGER < W02-INTEGER
+      * ------------      PROVIDING GRACE PERIOD
+                      PERFORM 4400-POL-LAPSED-TEMP-PARA
+                         THRU 4400-POL-LAPSED-TEMP-PARA-EXIT
+              END-EVALUATE
+
+           ELSE
+              EVALUATE TRUE
+      * ------------      CURRENT DATE < EXPECTED DATE
+                 WHEN W03-INTEGER <= W01-INTEGER
+                      CONTINUE
+                 WHEN OTHER
+      * ------------      PROVIDING GRACE PERIOD
+                      PERFORM 4400-POL-LAPSED-TEMP-PARA
+                         THRU 4400-POL-LAPSED-TEMP-PARA-EXIT
+              END-EVALUATE
+           END-IF.
+
+       4200-CHECK-PAY-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+      * ------------      UPDATING PREMIUM_PAID
+
+       4300-PREMIUM-PAID-PARA.
+            EXEC SQL
+                UPDATE
+                       PREMIUM_PAID
+                SET
+                       LAST_PREMIUM_DATE = :EXPECTED-DATE1
+                WHERE
+                       APPLICANT_ID = :APPLICANT-ID
+            END-EXEC
+            DISPLAY 'QUERY  3 : ' SQLCODE
+            MOVE SQLCODE TO W01-SQLCODE
+            IF ( C01W-SUCCESS )
+                EXEC SQL
+                   COMMIT
+                END-EXEC
+                PERFORM 4301-UPDATE-CASHIER-PARA
+                   THRU 4301-UPDATE-CASHIER-PARA-EXIT
+            ELSE
+                IF ( C01W-DEADLOCK )
+                    DISPLAY 'DEADLOCK IN QUERY 3 ' SQLCODE
+                ELSE
+                     PERFORM 2100-DSNTIAR-PARA
+                     THRU 2100-DSNTIAR-PARA-EXIT
+                END-IF
+            END-IF.
+       4300-PREMIUM-PAID-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+      * ------------      REMOVING REC FROM CASHIER'S TABLE
+
+       4301-UPDATE-CASHIER-PARA.
+           EXEC SQL
+              DELETE FROM PAID_CUSTOMER
+              WHERE
+                     APPLICANT_ID3 = :APPLICANT-ID
+           END-EXEC
+           DISPLAY 'QUERY  4 ' SQLCODE
+            MOVE SQLCODE TO W01-SQLCODE
+            IF ( C01W-SUCCESS )
+                EXEC SQL
+                   COMMIT
+                END-EXEC
+            ELSE
+                IF ( C01W-DEADLOCK )
+                    DISPLAY 'DEADLOCK IN QUERY 4 ' W01-SQLCODE
+                ELSE
+                     PERFORM 2100-DSNTIAR-PARA
+                     THRU 2100-DSNTIAR-PARA-EXIT
+                END-IF
+            END-IF.
+       4301-UPDATE-CASHIER-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      INSERTING INTO POLICY LAPSED TEMP TABLE
+
+       4400-POL-LAPSED-TEMP-PARA.
+
+           MOVE APPLICANT-ID      TO   APPLICANT-ID2
+           MOVE APPLICANT-NAME    TO   APPLICANT-NAME2
+           MOVE DOOR-NO           TO   DOOR-NO2
+           MOVE STREET            TO   STREET2
+           MOVE CITY              TO   CITY2
+           MOVE COUNTRY-CODE      TO   COUNTRY-CODE2
+           MOVE PIN               TO   PIN2
+           MOVE MOBILE            TO   MOBILE2
+           MOVE DATE-OF-BIRTH     TO   DATE-OF-BIRTH2
+           MOVE GENDER            TO   GENDER2
+           MOVE UNIQUE-ID         TO   UNIQUE-ID2
+           MOVE ENROLLED-DATE     TO   ENROLLED-DATE2
+           MOVE LAST-PREMIUM-DATE TO   LAST-PREMIUM-DATE2
+           EXEC SQL
+               INSERT INTO
+                      POL_LAPSED_TEMP
+               VALUES(
+                     :APPLICANT-ID2
+                    ,:APPLICANT-NAME2
+                    ,:DOOR-NO2
+                    ,:STREET2
+                    ,:CITY2
+                    ,:COUNTRY-CODE2
+                    ,:PIN2
+                    ,:MOBILE2
+                    ,:DATE-OF-BIRTH2
+                    ,:GENDER2
+                    ,:UNIQUE-ID2
+                    ,:ENROLLED-DATE2
+                    ,:LAST-PREMIUM-DATE2
+                     )
+           END-EXEC
+           DISPLAY 'QUERY  5 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                  COMMIT
+              END-EXEC
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 5 ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+      * ------------      SELECTING PAY DATE FOR TEMP LAPSE
+           EXEC SQL
+               SELECT
+                      APPLICANT_ID3
+                     ,PAID_DATE3
+               INTO
+                     :APPLICANT-ID3
+                    ,:PAID-DATE3
+               FROM
+                      PAID_CUSTOMER
+               WHERE
+                      APPLICANT_ID3 = :APPLICANT-ID2
+           END-EXEC
+           DISPLAY 'QUERY  6 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF C01W-SUCCESS OR C01W-NORECORD
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 6 ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+      * ------------      PROVIDING 15 DAYS GRACE PERIOD
+      * ------------      FOR LAPSE_TEMP
+           COMPUTE W04-INTEGER = W01-INTEGER
+           COMPUTE W01-INTEGER = W01-INTEGER + W20-GRACE-TIME
+           COMPUTE W01-EXPECTED-DATE = FUNCTION DATE-OF-INTEGER
+                                    (W01-INTEGER)
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)
+           PERFORM 4500-UPDATE-TEMP-PARA
+              THRU 4500-UPDATE-TEMP-PARA-EXIT.
+
+       4400-POL-LAPSED-TEMP-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      UPDATING PREMIUM PAID TEMP FOR GRACE PERIOD
+
+       4500-UPDATE-TEMP-PARA.
+           IF ( C01W-SUCCESS )
+              MOVE PAID-DATE3        TO   PAID-DATE1
+           ELSE
+              MOVE 'NOT PAID' TO PAID-DATE1
+           END-IF.
+           SET C01W-SUCCESS TO TRUE
+            EXEC SQL
+                UPDATE
+                       PREMIUM_PAID_TEMP
+                SET
+                       EXPECTED_DATE1 = :EXPECTED-DATE1
+                      ,PAID_DATE1      = :PAID-DATE1
+                WHERE
+                       APPLICANT_ID1 = :APPLICANT-ID
+            END-EXEC
+           DISPLAY 'QUERY  7 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                  COMMIT
+              END-EXEC
+           PERFORM 4600-CHECK-PAY-PARA
+              THRU 4600-CHECK-PAY-PARA-EXIT
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 7 ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       4500-UPDATE-TEMP-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+
+
+      * ------------      CHECKING FOR PROPER PAYMENT
+
+       4600-CHECK-PAY-PARA.
+
+           IF ( PAID-DATE1 NOT = 'NOT PAID' )
+              MOVE PAID-DATE1(1:4) TO W01-PAY-DATE(1:4)
+              MOVE PAID-DATE1(6:2) TO W01-PAY-DATE(5:2)
+              MOVE PAID-DATE1(9:2) TO W01-PAY-DATE(7:2)
+
+              DISPLAY W01-PAY-DATE
+              COMPUTE W02-INTEGER =
+                         FUNCTION INTEGER-OF-DATE ( W01-PAY-DATE )
+
+              EVALUATE TRUE
+      * ------------      PAID WITHIN GRACE PERIOD
+                 WHEN W02-INTEGER <= W01-INTEGER
+           COMPUTE W01-EXPECTED-DATE = FUNCTION DATE-OF-INTEGER
+                                    (W04-INTEGER)
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)
+                      PERFORM 4300-PREMIUM-PAID-PARA
+                         THRU 4300-PREMIUM-PAID-PARA-EXIT
+      * ------------      REMOVING REC FROM LAPSE TEMP
+                      EXEC SQL
+                          DELETE FROM POL_LAPSED_TEMP
+                          WHERE APPLICANT_ID2 = :APPLICANT-ID2
+                      END-EXEC
+                      MOVE SQLCODE TO W01-SQLCODE
+                      DISPLAY 'QUERY  8 ' SQLCODE
+                      IF ( C01W-SUCCESS )
+                          EXEC SQL
+                              COMMIT
+                          END-EXEC
+                      ELSE IF ( C01W-DEADLOCK )
+                       DISPLAY 'DEADLOCK IN QUERY 8 ' SQLCODE
+                      ELSE
+                          PERFORM 2100-DSNTIAR-PARA
+                             THRU 2100-DSNTIAR-PARA-EXIT
+                      END-IF
+                      END-IF
+      * ------------      LAPSING FOR 1ST TIME
+                 WHEN W01-INTEGER < W02-INTEGER
+                      MOVE 1 TO POLICY-LAPSED-TIMES4
+                      PERFORM 4700-POL-LAPSED-PARA
+                         THRU 4700-POL-LAPSED-PARA-EXIT
+      * ------------      REMOVING REC FROM LAPSE TEMP
+                      EXEC SQL
+                          DELETE FROM POL_LAPSED_TEMP
+                          WHERE APPLICANT_ID2 = :APPLICANT-ID2
+                      END-EXEC
+                      MOVE SQLCODE TO W01-SQLCODE
+                      DISPLAY 'QUERY  9 ' SQLCODE
+                      IF ( C01W-SUCCESS )
+                          EXEC SQL
+                              COMMIT
+                          END-EXEC
+                      ELSE IF ( C01W-DEADLOCK )
+                       DISPLAY 'DEADLOCK IN QUERY 9 ' SQLCODE
+
+                      ELSE
+                          PERFORM 2100-DSNTIAR-PARA
+                             THRU 2100-DSNTIAR-PARA-EXIT
+                      END-IF
+                      END-IF
+              END-EVALUATE
+
+           ELSE
+              EVALUATE TRUE
+      * ------------      CURRENT DATE <= EXPECTED DATE
+                 WHEN W03-INTEGER <= W01-INTEGER
+                      CONTINUE
+                 WHEN OTHER
+      * ------------      LAPSING FOR 1ST TIME
+                      MOVE 1 TO POLICY-LAPSED-TIMES4
+                      PERFORM 4700-POL-LAPSED-PARA
+                         THRU 4700-POL-LAPSED-PARA-EXIT
+                      EXEC SQL
+                          DELETE FROM POL_LAPSED_TEMP
+                          WHERE APPLICANT_ID2 = :APPLICANT-ID2
+                      END-EXEC
+                      MOVE SQLCODE TO W01-SQLCODE
+                      DISPLAY 'QUERY  10 ' SQLCODE
+                      IF ( C01W-SUCCESS )
+                          EXEC SQL
+                              COMMIT
+                          END-EXEC
+                      ELSE IF ( C01W-DEADLOCK )
+                       DISPLAY 'DEADLOCK IN QUERY 10 ' SQLCODE
+
+                      ELSE
+                          PERFORM 2100-DSNTIAR-PARA
+                             THRU 2100-DSNTIAR-PARA-EXIT
+                      END-IF
+                      END-IF
+              END-EVALUATE
+           END-IF.
+
+       4600-CHECK-PAY-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      MOVING TO LAPSED TABLE
+
+       4700-POL-LAPSED-PARA.
+
+
+           MOVE APPLICANT-ID2      TO     APPLICANT-ID4
+           MOVE APPLICANT-NAME2    TO     APPLICANT-NAME4
+           MOVE DOOR-NO2           TO     DOOR-NO4
+           MOVE STREET2            TO     STREET4
+           MOVE CITY2              TO     CITY4
+           MOVE COUNTRY-CODE2      TO     COUNTRY-CODE4
+           MOVE PIN2               TO     PIN4
+           MOVE MOBILE2            TO     MOBILE4
+           MOVE DATE-OF-BIRTH2     TO     DATE-OF-BIRTH4
+           MOVE GENDER2            TO     GENDER4
+           MOVE UNIQUE-ID2         TO     UNIQUE-ID4
+           MOVE ENROLLED-DATE2     TO     ENROLLED-DATE4
+           MOVE LAST-PREMIUM-DATE2 TO     LAST-PREMIUM-DATE4
+           MOVE 'A' TO LAPSE-INDICATOR4
+
+           EXEC SQL
+               INSERT INTO POLICY_LAPSED VALUES(
+                           :APPLICANT-ID4
+                          ,:APPLICANT-NAME4
+                          ,:DOOR-NO4
+                          ,:STREET4
+                          ,:CITY4
+                          ,:COUNTRY-CODE4
+                          ,:PIN4
+                          ,:MOBILE4
+                          ,:DATE-OF-BIRTH4
+                          ,:GENDER4
+                          ,:UNIQUE-ID4
+                          ,:ENROLLED-DATE4
+                          ,:LAST-PREMIUM-DATE4
+                          ,:LAPSE-INDICATOR4
+                          ,:POLICY-LAPSED-TIMES4
+                          )
+           END-EXEC
+           MOVE SQLCODE TO W01-SQLCODE
+           DISPLAY 'QUERY  11 ' SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                   COMMIT
+              END-EXEC
+           ELSE IF ( C01W-DUPLICATE )
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 11  ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+      * ------------      SELECTING PAID DATE FOR LAPSE
+           EXEC SQL
+               SELECT
+                      APPLICANT_ID3
+                     ,PAID_DATE3
+               INTO
+                     :APPLICANT-ID3
+                    ,:PAID-DATE3
+               FROM
+                      PAID_CUSTOMER
+               WHERE
+                      APPLICANT_ID3 = :APPLICANT-ID4
+           END-EXEC
+           DISPLAY 'QUERY  12: ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+                           W01-SQLCODE1
+           IF C01W-SUCCESS OR C01W-NORECORD
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 12  ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+      * ------------      EXTENDING GRACE PERIOD FOR LAPSE
+           COMPUTE W01-INTEGER = W01-INTEGER + W20-GRACE-TIME
+           COMPUTE W01-EXPECTED-DATE = FUNCTION DATE-OF-INTEGER
+                                    (W01-INTEGER)
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)
+
+           PERFORM UNTIL ( POLICY-LAPSED-TIMES4 > 15 )
+                 IF ( W03-INTEGER > W01-INTEGER )
+
+           PERFORM 4800-UPDATE-TEMP-PARA
+              THRU 4800-UPDATE-TEMP-PARA-EXIT
+                 ELSE
+                   MOVE 16 TO POLICY-LAPSED-TIMES4
+                 END-IF
+            END-PERFORM.
+       4700-POL-LAPSED-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      UPDATE PREMIUM PAID TEMP FOR LAPSE
+
+       4800-UPDATE-TEMP-PARA.
+           MOVE W01-SQLCODE1 TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              MOVE PAID-DATE3        TO   PAID-DATE1
+           ELSE
+              MOVE 'NOT PAID' TO PAID-DATE1
+           END-IF.
+           SET C01W-SUCCESS TO TRUE
+           EXEC SQL
+               UPDATE
+                      PREMIUM_PAID_TEMP
+               SET
+                      EXPECTED_DATE1 = :EXPECTED-DATE1
+                     ,PAID_DATE1      = :PAID-DATE1
+               WHERE
+                      APPLICANT_ID1 = :APPLICANT-ID4
+           END-EXEC
+           DISPLAY 'QUERY 13 : ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                  COMMIT
+              END-EXEC
+              PERFORM 4900-CHECK-PAY-PARA
+                 THRU 4900-CHECK-PAY-PARA-EXIT
+
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN QUERY 13  ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       4800-UPDATE-TEMP-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+
+
+      * ------------      CHECKING FOR PAY IN  LAPSE
+
+       4900-CHECK-PAY-PARA.
+
+           IF ( PAID-DATE1 NOT = 'NOT PAID' )
+              MOVE PAID-DATE1(1:4) TO W01-PAY-DATE(1:4)
+              MOVE PAID-DATE1(6:2) TO W01-PAY-DATE(5:2)
+              MOVE PAID-DATE1(9:2) TO W01-PAY-DATE(7:2)
+
+              DISPLAY W01-PAY-DATE
+              COMPUTE W02-INTEGER =
+                         FUNCTION INTEGER-OF-DATE ( W01-PAY-DATE )
+
+              EVALUATE TRUE
+      * ------------      PAID
+                 WHEN W02-INTEGER <= W01-INTEGER
+                      PERFORM 4300-PREMIUM-PAID-PARA
+                         THRU 4300-PREMIUM-PAID-PARA-EXIT
+      * ------------      DELETE FROM POLICY_LAPSED
+                      EXEC SQL
+                          DELETE FROM POLICY_LAPSED
+                          WHERE APPLICANT_ID4 = :APPLICANT-ID4
+                      END-EXEC
+                      MOVE SQLCODE TO W01-SQLCODE
+                      DISPLAY 'QUERY  14 ' SQLCODE
+                      IF ( C01W-SUCCESS )
+                          EXEC SQL
+                              COMMIT
+                          END-EXEC
+                      ELSE IF ( C01W-DEADLOCK )
+                       DISPLAY 'DEADLOCK IN QUERY 14  ' SQLCODE
+
+                      ELSE
+                          PERFORM 2100-DSNTIAR-PARA
+                             THRU 2100-DSNTIAR-PARA-EXIT
+                      END-IF
+                      END-IF
+      * ------------      SUBSEQUENT LAPSE
+                 WHEN W01-INTEGER < W02-INTEGER
+                          PERFORM 5000-POL-LAPSED-PARA
+                             THRU 5000-POL-LAPSED-PARA-EXIT
+                 END-EVALUATE
+            ELSE
+              EVALUATE TRUE
+      * ------------      CURRENT DATE < EXPECTED  DATE
+                 WHEN W03-INTEGER <= W01-INTEGER
+                      CONTINUE
+                 WHEN OTHER
+      * ------------      SUBSEQUENT LAPSE
+                      PERFORM 5000-POL-LAPSED-PARA
+                         THRU 5000-POL-LAPSED-PARA-EXIT
+              END-EVALUATE
+
+           END-IF.
+
+       4900-CHECK-PAY-PARA-EXIT.
+           EXIT.
+
+
+
+
+      * ------------      UPDATING LAPSE TABLE
+
+       5000-POL-LAPSED-PARA.
+
+           ADD 1  TO POLICY-LAPSED-TIMES4
+           IF ( POLICY-LAPSED-TIMES4 = 2 )
+              MOVE 'B' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 3 )
+              MOVE 'C' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 4 )
+              MOVE 'D' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 5 )
+              MOVE 'E' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 6 )
+              MOVE 'F' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 7 )
+              MOVE 'G' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 8 )
+              MOVE 'H' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 9 )
+              MOVE 'I' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 10 )
+              MOVE 'J' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 11 )
+              MOVE 'K' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 12 )
+              MOVE 'L' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 13 )
+              MOVE 'M' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 14 )
+              MOVE 'N' TO LAPSE-INDICATOR4
+           END-IF.
+
+           IF ( POLICY-LAPSED-TIMES4 = 15 )
+              MOVE 'O' TO LAPSE-INDICATOR4
+           END-IF.
+      * ------------      UPDATING LAPSE TABLE
+           EXEC SQL
+              UPDATE POLICY_LAPSED
+              SET
+                     POLICY_LAPSED_TIMES4 = :POLICY-LAPSED-TIMES4
+                    ,LAPSE_INDICATOR4     = :LAPSE-INDICATOR4
+              WHERE
+                     APPLICANT_ID4 = :APPLICANT-ID4
+           END-EXEC
+           MOVE SQLCODE TO W01-SQLCODE
+           DISPLAY 'QUERY  16 ' SQLCODE
+           IF ( C01W-SUCCESS )
+              EXEC SQL
+                  COMMIT
+              END-EXEC
+           ELSE IF ( C01W-DEADLOCK )
+            DISPLAY ' DEADLOCK IN QUERY 16 '
+                                              SQLCODE
+           ELSE
+               PERFORM 2100-DSNTIAR-PARA
+                  THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF
+           END-IF
+           IF ( POLICY-LAPSED-TIMES4 < 15 )
+      * ------------      SELECTING PAID DATE FOR SUBSEQUENT LAPSE
+           EXEC SQL
+               SELECT
+                      APPLICANT_ID3
+                     ,PAID_DATE3
+               INTO
+                     :APPLICANT-ID3
+                    ,:PAID-DATE3
+               FROM
+                      PAID_CUSTOMER
+               WHERE
+                      APPLICANT_ID3 = :APPLICANT-ID4
+           END-EXEC
+           DISPLAY 'QUERY  17: ' SQLCODE
+           MOVE SQLCODE TO W01-SQLCODE
+           IF C01W-SUCCESS OR C01W-NORECORD
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY ' DEADLOCK IN QUERY 17 ' SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF
+           END-IF
+      * ------------      PROVIDING 15 DAYS GRACE FOR SUB LAPSE
+           COMPUTE W01-INTEGER = W01-INTEGER + W20-GRACE-TIME
+           COMPUTE W01-EXPECTED-DATE = FUNCTION DATE-OF-INTEGER
+                                    (W01-INTEGER)
+           MOVE W01-EXPECTED-DATE(1:4) TO EXPECTED-DATE1(1:4)
+           MOVE W01-EXPECTED-DATE(5:2) TO EXPECTED-DATE1(6:2)
+           MOVE W01-EXPECTED-DATE(7:2) TO EXPECTED-DATE1(9:2)
+           DISPLAY 'THIS START POINT : '.
+
+       5000-POL-LAPSED-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+
+
+
+
+
+
+       8000-CLOSE-CURSOR-PARA.
+
+           EXEC SQL
+               CLOSE CS-CUR1
+           END-EXEC
+           MOVE SQLCODE TO W01-SQLCODE
+           IF ( C01W-SUCCESS )
+              CONTINUE
+           ELSE IF ( C01W-DEADLOCK )
+              DISPLAY 'DEADLOCK IN CLOSING CURSOR ' W01-SQLCODE
+           ELSE
+              PERFORM 2100-DSNTIAR-PARA
+                 THRU 2100-DSNTIAR-PARA-EXIT
+           END-IF.
+
+       8000-CLOSE-CURSOR-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       8100-CLOSE-FILE-PARA.
+
+           CLOSE BI001-ALLWD
+           IF ( C10W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY ' ERROR IN CLOSING ALLOWED FILE ' W10-FS-STAT
+           END-IF.
+           CLOSE BI002-GRACE
+           IF ( C20W-SUCCESS )
+              CONTINUE
+           ELSE
+              DISPLAY ' ERROR IN CLOSING GRACE FILE ' W20-FS-STAT
+           END-IF.
+
+       8100-CLOSE-FILE-PARA-EXIT.
+           EXIT.
+
+
+
+
+
+       9000-TERMINATE-PARA.
+
+           STOP RUN.
+
+       9000-TERMINATE-PARA-EXIT.
+           EXIT.
+

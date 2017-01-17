@@ -1,0 +1,44 @@
+      ******************************************************************
+      * DCLGEN TABLE(PREMIUM_PAID)                                     *
+      *        LIBRARY(TCHN007.CLAIM.DB2(PREPAID))                     *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+           EXEC SQL DECLARE PREMIUM_PAID TABLE
+           ( APPLICANT_ID                   CHAR(13) NOT NULL,
+             APPLICANT_NAME                 CHAR(32) NOT NULL,
+             DOOR_NO                        CHAR(10) NOT NULL,
+             STREET                         CHAR(20) NOT NULL,
+             CITY                           CHAR(20) NOT NULL,
+             COUNTRY_CODE                   CHAR(3) NOT NULL,
+             PIN                            DECIMAL(6, 0) NOT NULL,
+             MOBILE                         DECIMAL(10, 0) NOT NULL,
+             DATE_OF_BIRTH                  CHAR(10) NOT NULL,
+             GENDER                         CHAR(1) NOT NULL,
+             UNIQUE_ID                      CHAR(10) NOT NULL,
+             ENROLLED_DATE                  CHAR(10) NOT NULL,
+             PREMIUM_DATE                   CHAR(10) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE PREMIUM_PAID                       *
+      ******************************************************************
+       01  DCLPREMIUM-PAID.
+           10 APPLICANT-ID         PIC X(13).
+           10 APPLICANT-NAME       PIC X(32).
+           10 DOOR-NO              PIC X(10).
+           10 STREET               PIC X(20).
+           10 CITY                 PIC X(20).
+           10 COUNTRY-CODE         PIC X(3).
+           10 PIN                  PIC S9(6)V USAGE COMP-3.
+           10 MOBILE               PIC S9(10)V USAGE COMP-3.
+           10 DATE-OF-BIRTH        PIC X(10).
+           10 GENDER               PIC X(1).
+           10 UNIQUE-ID            PIC X(10).
+           10 ENROLLED-DATE        PIC X(10).
+           10 PREMIUM-DATE         PIC X(10).
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 13      *
+      ******************************************************************
+

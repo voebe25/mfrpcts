@@ -1,0 +1,394 @@
+       IDENTIFICATION DIVISION.                                         00000103
+       PROGRAM-ID.             DB2.                                     00000203
+                                                                        00000303
+       ENVIRONMENT DIVISION.                                            00000403
+       DATA DIVISION.                                                   00000503
+       WORKING-STORAGE SECTION.                                         00001001
+                                                                        00002001
+           EXEC SQL INCLUDE SQLCA                                       00010000
+           END-EXEC                                                     00020000
+                                                                        00030000
+           EXEC SQL INCLUDE PRELAP                                      00031001
+           END-EXEC                                                     00032000
+                                                                        00033000
+           EXEC SQL INCLUDE PRELAPT                                     00034001
+           END-EXEC                                                     00035000
+                                                                        00036000
+           EXEC SQL INCLUDE PREPAID                                     00037001
+           END-EXEC                                                     00038001
+                                                                        00039001
+           EXEC SQL                                                     00039101
+           DECLARE CS_CUR1 CURSOR WITH HOLD FOR                         00039206
+             SELECT                                                     00039301
+               APPLICANT_ID                                             00039472
+              ,DAYS(LAST_PREMIUM_DATE)-DAYS(ENROLLED_DATE)              00039572
+             FROM                                                       00039601
+               PREMIUM_PAID                                             00039701
+           END-EXEC                                                     00039801
+                                                                        00039901
+           EXEC SQL                                                     00040001
+           DECLARE CS_CUR2 CURSOR WITH HOLD FOR                         00040106
+             SELECT                                                     00040201
+               APPLICANT_ID                                             00040378
+              ,DAYS(LAST_PREMIUM_DATE)-DAYS(ENROLLED_DATE)+15           00040477
+             FROM                                                       00040501
+               PREMIUM_PAID                                             00040638
+           END-EXEC.                                                    00040701
+                                                                        00040801
+        01 W01-DIFFERENCE               PIC S9(04) USAGE COMP.          00040915
+        01 W01-GRACE-PERIOD             PIC S9(04) USAGE COMP.          00041015
+                                                                        00041101
+       PROCEDURE DIVISION.                                              00041201
+                                                                        00041301
+       0000-MAIN-PARA.                                                  00041404
+                                                                        00041525
+           PERFORM 1000-INITIALIZATION-PARA                             00041625
+              THRU 1000-INITIALIZATION-PARA-EXIT                        00041725
+                                                                        00041825
+           PERFORM 2000-PROCESS-PARA                                    00041925
+              THRU 2000-PROCESS-PARA-EXIT                               00042025
+                                                                        00042125
+           PERFORM 9000-TERMINATION-PARA                                00042225
+              THRU 9000-TERMINATION-PARA-EXIT.                          00042325
+                                                                        00042425
+       0000-MAIN-PARA-EXIT.                                             00043004
+           EXIT.                                                        00043104
+                                                                        00043204
+       1000-INITIALIZATION-PARA.                                        00043329
+                                                                        00043429
+           CONTINUE.                                                    00043530
+                                                                        00043629
+       1000-INITIALIZATION-PARA-EXIT.                                   00044429
+           EXIT.                                                        00044529
+                                                                        00044629
+       2000-PROCESS-PARA.                                               00044729
+                                                                        00044829
+           PERFORM 3000-OPEN-CURSOR-PARA                                00044929
+              THRU 3000-OPEN-CURSOR-PARA-EXIT                           00045029
+                                                                        00045129
+           PERFORM 4000-FETCH-PARA                                      00045229
+              THRU 4000-FETCH-PARA-EXIT                                 00045329
+              UNTIL SQLCODE NOT = +000                                  00045429
+                                                                        00045529
+           PERFORM 5000-CLOSE-CURSOR-PARA                               00045629
+              THRU 5000-CLOSE-CURSOR-PARA-EXIT.                         00045729
+                                                                        00045829
+       2000-PROCESS-PARA-EXIT.                                          00045929
+           EXIT.                                                        00046029
+                                                                        00046129
+      * -----------     FOR TABLE 1                                     00046229
+                                                                        00046329
+       3000-OPEN-CURSOR-PARA.                                           00047025
+                                                                        00048025
+           EXEC SQL                                                     00049025
+             OPEN CS_CUR1                                               00049127
+           END-EXEC                                                     00049225
+                                                                        00049325
+           EVALUATE TRUE                                                00049425
+           WHEN SQLCODE = +000                                          00049525
+             CONTINUE                                                   00049625
+           WHEN OTHER                                                   00049725
+             DISPLAY ' ERROR IN OPENING CURSOR1: ' SQLCODE              00049828
+           END-EVALUATE                                                 00049928
+                                                                        00050128
+           EXEC SQL                                                     00050228
+             OPEN CS_CUR2                                               00050328
+           END-EXEC                                                     00050428
+                                                                        00050528
+           EVALUATE TRUE                                                00050628
+           WHEN SQLCODE = +000                                          00050728
+             CONTINUE                                                   00050828
+           WHEN OTHER                                                   00050928
+             DISPLAY ' ERROR IN OPENING CURSOR2: ' SQLCODE              00051028
+           END-EVALUATE.                                                00051128
+                                                                        00051228
+       3000-OPEN-CURSOR-PARA-EXIT.                                      00051328
+           EXIT.                                                        00051428
+                                                                        00051628
+       4000-FETCH-PARA.                                                 00051728
+                                                                        00051828
+           INITIALIZE DCLPREMIUM-PAID                                   00051928
+                      DCLPREMIUM-LAPSED                                 00052028
+                      DCLPREMIUM-LAPSED-TEMP                            00052128
+                                                                        00053028
+           EXEC SQL                                                     00071001
+             FETCH CS_CUR1                                              00072001
+             INTO                                                       00073001
+               :APPLICANT-ID                                            00073172
+              ,:W01-DIFFERENCE                                          00074072
+           END-EXEC                                                     00075068
+                                                                        00080001
+           EVALUATE TRUE                                                00081026
+           WHEN SQLCODE = +000                                          00082026
+             DISPLAY ' READ : '                                         00082141
+             PERFORM 4100-PERFORM-PARA                                  00083032
+                THRU 4100-PERFORM-PARA-EXIT                             00084032
+                                                                        00085026
+           WHEN SQLCODE = +100                                          00086026
+             CONTINUE                                                   00087026
+                                                                        00088026
+           WHEN OTHER                                                   00089026
+             DISPLAY ' ERROR IN FETCH CURSOR : ' SQLCODE                00089131
+           END-EVALUATE                                                 00089231
+                                                                        00089326
+           EXEC SQL                                                     00089431
+             FETCH CS_CUR2                                              00089531
+             INTO                                                       00089631
+               :APPLICANT-ID                                            00089778
+              ,:W01-GRACE-PERIOD                                        00089878
+           END-EXEC                                                     00089931
+                                                                        00090031
+           EVALUATE TRUE                                                00090131
+           WHEN SQLCODE = +000                                          00090231
+             DISPLAY ' READ1: '                                         00090342
+             PERFORM 4200-PERFORM-PARA                                  00090435
+                THRU 4200-PERFORM-PARA-EXIT                             00090535
+                                                                        00090631
+           WHEN SQLCODE = +100                                          00090731
+             CONTINUE                                                   00090831
+                                                                        00090931
+           WHEN OTHER                                                   00091031
+             DISPLAY ' ERROR IN FETCH CURSOR : ' SQLCODE                00091131
+           END-EVALUATE.                                                00091231
+                                                                        00091331
+       4000-FETCH-PARA-EXIT.                                            00091426
+           EXIT.                                                        00091526
+                                                                        00091626
+       4100-PERFORM-PARA.                                               00091732
+                                                                        00091826
+           DISPLAY ' DATE DIFFERENCE : ' W01-DIFFERENCE                 00091919
+                                                                        00092019
+           IF W01-DIFFERENCE > 30                                       00100001
+              EXEC SQL                                                  00110001
+                SELECT                                                  00120001
+                  APPLICANT_NAME                                        00122172
+                 ,DOOR_NO                                               00123001
+                 ,STREET                                                00124001
+                 ,CITY                                                  00125001
+                 ,COUNTRY_CODE                                          00126001
+                 ,PIN                                                   00127001
+                 ,MOBILE                                                00128001
+                 ,DATE_OF_BIRTH                                         00129001
+                 ,GENDER                                                00130001
+                 ,UNIQUE_ID                                             00140001
+                 ,ENROLLED_DATE                                         00141001
+                 ,LAST_PREMIUM_DATE                                     00150001
+               INTO                                                     00151001
+                  :APPLICANT-NAME                                       00153172
+                 ,:DOOR-NO                                              00154001
+                 ,:STREET                                               00155001
+                 ,:CITY                                                 00156001
+                 ,:COUNTRY-CODE                                         00157001
+                 ,:PIN                                                  00158001
+                 ,:MOBILE                                               00159001
+                 ,:DATE-OF-BIRTH                                        00159101
+                 ,:GENDER                                               00159201
+                 ,:UNIQUE-ID                                            00159301
+                 ,:ENROLLED-DATE                                        00159401
+                 ,:LAST-PREMIUM-DATE                                    00159501
+               FROM                                                     00160001
+                 PREMIUM_PAID                                           00170001
+               WHERE                                                    00170170
+                 APPLICANT_ID=:APPLICANT-ID                             00170271
+               END-EXEC                                                 00171001
+                                                                        00172043
+           DISPLAY ' APPLICANT ID : ' APPLICANT-ID                      00172155
+                                                                        00172255
+           EVALUATE TRUE                                                00173043
+           WHEN SQLCODE = +000                                          00174043
+             CONTINUE                                                   00175043
+           WHEN SQLCODE = +100                                          00175158
+             CONTINUE                                                   00175258
+           WHEN OTHER                                                   00176043
+             DISPLAY ' ERROR IN SELECT1 : ' SQLCODE                     00177043
+           END-EVALUATE                                                 00178043
+                                                                        00180001
+           EXEC SQL                                                     00190001
+             INSERT INTO PREMIUM_LAPSED_TEMP                            00191008
+             VALUES                                                     00200001
+             (                                                          00210001
+               :APPLICANT-ID                                            00210111
+              ,:APPLICANT-NAME                                          00210211
+              ,:DOOR-NO                                                 00211011
+              ,:STREET                                                  00211111
+              ,:CITY                                                    00211211
+              ,:COUNTRY-CODE                                            00211311
+              ,:PIN                                                     00211411
+              ,:MOBILE                                                  00211511
+              ,:DATE-OF-BIRTH                                           00211611
+              ,:GENDER                                                  00211711
+              ,:UNIQUE-ID                                               00211811
+              ,:ENROLLED-DATE                                           00211911
+              ,:LAST-PREMIUM-DATE                                       00212011
+              )                                                         00212101
+             END-EXEC                                                   00212201
+                                                                        00212633
+           EVALUATE TRUE                                                00212743
+           WHEN SQLCODE = +000                                          00212843
+             CONTINUE                                                   00212943
+           DISPLAY ' AFTER INSERT : ' APPLICANT-ID                      00213076
+                                                                        00213173
+           WHEN OTHER                                                   00213243
+             DISPLAY ' ERROR IN INSERT1 : ' SQLCODE                     00213344
+           END-EVALUATE                                                 00213474
+                                                                        00213574
+           END-IF.                                                      00213675
+                                                                        00213743
+       4100-PERFORM-PARA-EXIT.                                          00213833
+           EXIT.                                                        00213933
+                                                                        00214033
+      * -----------     FOR TABLE 2                                     00214101
+                                                                        00214233
+       4200-PERFORM-PARA.                                               00214335
+                                                                        00214401
+           DISPLAY ' GRACE PERIOD : ' W01-GRACE-PERIOD                  00214520
+                                                                        00214649
+           IF W01-GRACE-PERIOD > 45                                     00214749
+              EXEC SQL                                                  00214849
+                SELECT                                                  00214949
+                  APPLICANT_NAME1                                       00215177
+                 ,DOOR_NO1                                              00215249
+                 ,STREET1                                               00215349
+                 ,CITY1                                                 00215449
+                 ,COUNTRY_CODE1                                         00215549
+                 ,PIN1                                                  00215649
+                 ,MOBILE1                                               00215749
+                 ,DATE_OF_BIRTH1                                        00215849
+                 ,GENDER1                                               00215949
+                 ,UNIQUE_ID1                                            00216049
+                 ,ENROLLED_DATE1                                        00216149
+                 ,LAST_PREMIUM_DATE1                                    00216249
+               INTO                                                     00216349
+                  :APPLICANT-NAME1                                      00216577
+                 ,:DOOR-NO1                                             00216649
+                 ,:STREET1                                              00216749
+                 ,:CITY1                                                00216849
+                 ,:COUNTRY-CODE1                                        00216949
+                 ,:PIN1                                                 00217049
+                 ,:MOBILE1                                              00217149
+                 ,:DATE-OF-BIRTH1                                       00217249
+                 ,:GENDER1                                              00217349
+                 ,:UNIQUE-ID1                                           00217449
+                 ,:ENROLLED-DATE1                                       00217549
+                 ,:LAST-PREMIUM-DATE1                                   00217649
+               FROM                                                     00217749
+                 PREMIUM_LAPSED_TEMP                                    00217849
+               WHERE                                                    00217977
+                 APPLICANT_ID1=:APPLICANT-ID1                           00218077
+               END-EXEC                                                 00218149
+                                                                        00218249
+           EVALUATE TRUE                                                00218349
+           WHEN SQLCODE = +000                                          00218449
+             CONTINUE                                                   00218549
+           WHEN SQLCODE = +100                                          00218649
+             CONTINUE                                                   00218749
+           WHEN OTHER                                                   00218849
+             DISPLAY ' ERROR IN SELECT2 : ' SQLCODE                     00218949
+           END-EVALUATE                                                 00219049
+                                                                        00219149
+           MOVE 'Y'                    TO LAPSE-INDICATOR               00219249
+           MOVE  1                     TO POLICY-LAPSED-TIMES           00219349
+                                                                        00219449
+           DISPLAY ' APPLICANT ID1: '  APPLICANT-ID1                    00219551
+                                                                        00219651
+           EXEC SQL                                                     00219749
+             INSERT INTO PREMIUM_LAPSED                                 00219849
+             VALUES                                                     00219949
+             (                                                          00220049
+               :APPLICANT-ID                                            00220179
+              ,:APPLICANT-NAME                                          00220280
+              ,:DOOR-NO                                                 00220380
+              ,:STREET                                                  00220480
+              ,:CITY                                                    00220580
+              ,:COUNTRY-CODE                                            00220680
+              ,:PIN                                                     00220780
+              ,:MOBILE                                                  00220880
+              ,:DATE-OF-BIRTH                                           00220980
+              ,:GENDER                                                  00221080
+              ,:UNIQUE-ID                                               00221180
+              ,:ENROLLED-DATE                                           00221280
+              ,:LAST-PREMIUM-DATE                                       00221380
+              ,:LAPSE-INDICATOR                                         00221449
+              ,:POLICY-LAPSED-TIMES                                     00221549
+              )                                                         00221649
+             END-EXEC                                                   00221749
+                                                                        00221849
+           END-IF                                                       00221949
+                                                                        00222049
+           EVALUATE TRUE                                                00222149
+           WHEN SQLCODE = +000                                          00222249
+             CONTINUE                                                   00222349
+           WHEN OTHER                                                   00222449
+             DISPLAY ' ERROR IN INSERT2 : ' SQLCODE                     00222549
+           END-EVALUATE                                                 00222649
+                                                                        00222749
+           IF W01-GRACE-PERIOD < 45                                     00222852
+                                                                        00222949
+           EXEC SQL                                                     00223049
+             UPDATE                                                     00223149
+                  PREMIUM_PAID                                          00223249
+             SET                                                        00223349
+                  APPLICANT_ID      =:APPLICANT-ID1                     00223449
+                 ,APPLICANT_NAME    =:APPLICANT-NAME1                   00223549
+                 ,DOOR_NO           =:DOOR-NO1                          00223649
+                 ,STREET            =:STREET1                           00223749
+                 ,CITY              =:CITY1                             00224003
+                 ,COUNTRY_CODE      =:COUNTRY-CODE1                     00225003
+                 ,PIN               =:PIN1                              00226003
+                 ,MOBILE            =:MOBILE1                           00227003
+                 ,DATE_OF_BIRTH     =:DATE-OF-BIRTH1                    00228003
+                 ,GENDER            =:GENDER1                           00229003
+                 ,UNIQUE_ID         =:UNIQUE-ID1                        00229103
+                 ,ENROLLED_DATE     =:ENROLLED-DATE1                    00229203
+                 ,LAST_PREMIUM_DATE =:LAST-PREMIUM-DATE1                00229303
+             WHERE                                                      00229460
+                  APPLICANT_ID=:APPLICANT-ID                            00229560
+           END-EXEC                                                     00230021
+           END-IF                                                       00231044
+                                                                        00240003
+           EVALUATE TRUE                                                00241044
+           WHEN SQLCODE = +000                                          00242044
+             CONTINUE                                                   00243044
+           WHEN OTHER                                                   00244044
+             DISPLAY ' ERROR IN UPDATE : ' SQLCODE                      00245044
+           END-EVALUATE.                                                00246044
+                                                                        00247044
+      * -----------     FOR TABLE 3                                     00250003
+                                                                        00261026
+       4200-PERFORM-PARA-EXIT.                                          00262035
+           EXIT.                                                        00263026
+                                                                        00265026
+       5000-CLOSE-CURSOR-PARA.                                          00266026
+                   EXEC SQL                                             00267026
+                       CLOSE CS_CUR1                                    00268027
+                   END-EXEC                                             00269026
+                                                                        00270026
+                 EVALUATE TRUE                                          00280026
+                      WHEN SQLCODE = +000                               00290026
+                           CONTINUE                                     00290126
+                      WHEN OTHER                                        00290226
+                           DISPLAY 'ERROR IN CLOSE1' SQLCODE            00290328
+                                                                        00290426
+                 END-EVALUATE                                           00290528
+                                                                        00290626
+                   EXEC SQL                                             00290728
+                       CLOSE CS_CUR2                                    00290828
+                   END-EXEC                                             00290928
+                                                                        00291028
+                 EVALUATE TRUE                                          00291128
+                      WHEN SQLCODE = +000                               00291228
+                           CONTINUE                                     00291328
+                      WHEN OTHER                                        00291428
+                           DISPLAY 'ERROR IN CLOSE2' SQLCODE            00291528
+                                                                        00291628
+                 END-EVALUATE.                                          00291728
+                                                                        00291828
+       5000-CLOSE-CURSOR-PARA-EXIT.                                     00291928
+            EXIT.                                                       00292028
+                                                                        00292128
+       9000-TERMINATION-PARA.                                           00292228
+            STOP RUN.                                                   00292328
+                                                                        00292428
+       9000-TERMINATION-PARA-EXIT.                                      00292528
+            EXIT.                                                       00293028
+

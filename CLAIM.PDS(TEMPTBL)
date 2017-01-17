@@ -1,0 +1,23 @@
+--******************************************************************    00001000
+--               CREATE TABLE PREMIUM_PAID                              00002000
+--******************************************************************    00003000
+ CREATE TABLE TEMPORARY(                                                00004000
+          APPLICANT_ID3      CHAR(13)    NOT NULL PRIMARY KEY           00005000
+         ,APPLICANT_NAME3    CHAR(32)    NOT NULL                       00006000
+         ,DOOR_NO3           CHAR(10)    NOT NULL                       00007000
+         ,STREET3            CHAR(20)    NOT NULL                       00008000
+         ,CITY3              CHAR(20)    NOT NULL                       00009000
+         ,COUNTRY_CODE3      CHAR(3)     NOT NULL                       00009100
+         ,PIN3               NUMERIC(6)  NOT NULL                       00009200
+         ,MOBILE3            NUMERIC(10) NOT NULL                       00009300
+         ,DATE_OF_BIRTH3     CHAR(10)    NOT NULL                       00009400
+         ,GENDER3            CHAR(1)     NOT NULL                       00009500
+         ,UNIQUE_ID3         CHAR(10)    NOT NULL                       00009600
+         ,ENROLLED_DATE3     CHAR(10)    NOT NULL                       00009700
+         ,LAST_PREMIUM_DATE3 CHAR(10)    NOT NULL                       00009800
+         ,PREMIUM_DATE       CHAR(10)    NOT NULL                       00009900
+         ,PAID_DATE          CHAR(10)    NOT NULL                       00010000
+         )IN DBTCHN02.TSCEP01;                                          00010100
+ CREATE UNIQUE INDEX IX_TEMPORARY ON TEMPORARY(APPLICANT_ID3);          00011001
+                                                                        00020000
+

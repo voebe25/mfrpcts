@@ -1,0 +1,48 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001001
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0)                          00002001
+//**********************************************************************00030000
+//*           CHANGE ALL TLAB000 TO TLAB<ID> GIVEN TO YOU (EG.TLAB001)  00040000
+//*           ENTER THE MEMNAME , SOURCE , LOADLIB :                    00050000
+//**********************************************************************00060000
+// SET MEMNAME=MFRP1                        <-MEMBER NAME               00070000
+// SET SOURCE=TCHN007.CLAIM.DB2              <- SOURCE DATASET          00080001
+// SET LOADLIB=TCHN007.CBEMF010.COBLOAD      <- LOAD LIBRARY            00090000
+// SET SLIB=TCHN007.CLAIM.DB2                <- COPY BOOK LIBRARY       00100001
+//**********************************************************************00110000
+//*       THIS STEP COMPILES THE COBOL PROGRAM                          00120000
+//**********************************************************************00130000
+//STEP0010 EXEC PGM=IGYCRCTL,                                           00140000
+//            PARM='LIB,XREF(FULL),SSRANGE,TEST(SYM),LIST'              00150000
+//SYSIN    DD DSN=&SOURCE(&MEMNAME),DISP=SHR           <--INPUT SOURCE  00160000
+//SYSLIN   DD DSNAME=&&LOADSET,UNIT=SYSDA,             <--OUTPUT OBJECT 00170000
+//            DISP=(MOD,PASS),                                          00180000
+//            SPACE=(TRK,(3,3))                                         00190000
+//SYSPRINT DD SYSOUT=*                                                  00200000
+//SYSLIB   DD  DISP=SHR,DSN=&SLIB                                       00210000
+//SYSUT1   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00220000
+//SYSUT2   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00230000
+//SYSUT3   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00240000
+//SYSUT4   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00250000
+//SYSUT5   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00260000
+//SYSUT6   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00270000
+//SYSUT7   DD SPACE=(CYL,(1,1)),UNIT=SYSDA                              00280000
+//**********************************************************************00290000
+//*                      LINK EDIT                                     *00300000
+//**********************************************************************00310000
+//STEP0020 EXEC PGM=IEWL,COND=(5,LE,STEP0010),                          00320000
+//         PARM='LIST,XREF',                                            00330000
+//          REGION=512K                                                 00340000
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)                           00350000
+//         DD DDNAME=SYSIN                                              00360000
+//SYSLMOD  DD DSN=&LOADLIB(&MEMNAME),                                   00370000
+//            DISP=SHR                                                  00380000
+//SYSLIB   DD DSN=CEE.SCEELKED,DISP=SHR                                 00390000
+//         DD DSN=CEE.SCEERUN,DISP=SHR                                  00400000
+//         DD DISP=SHR,DSN=ISP.SISPLOAD                                 00410000
+//         DD DISP=SHR,DSN=&LOADLIB                                     00420000
+//SYSUT1   DD UNIT=SYSDA,SPACE=(1024,(200,200))                         00430000
+//SYSUT2   DD UNIT=SYSDA,SPACE=(1024,(200,200))                         00440000
+//SYSUT7   DD UNIT=SYSDA,SPACE=(2048,(400,400))                         00450000
+//SYSIN    DD DUMMY                                                     00460000
+//SYSPRINT DD SYSOUT=*                                                  00470000
+

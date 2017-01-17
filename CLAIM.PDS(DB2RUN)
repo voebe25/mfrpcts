@@ -1,0 +1,28 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001016
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(200,0),PRTY=15                00002023
+//********************************************************************  00030016
+//*   THIS STEP RUNS THE LOAD MODULE.                                   00040016
+//********************************************************************  00050016
+//TRNSDBRN EXEC PGM=IKJEFT01,DYNAMNBR=20                                00060016
+//STEPLIB  DD  DISP=SHR,DSN=DSN811.SDSNLOAD                             00070016
+//SYSTSPRT DD SYSOUT=*                                                  00080016
+//SYSPRINT DD SYSOUT=*                                                  00090016
+//SYSUDUMP DD SYSOUT=*                                                  00100016
+//SYSOUT   DD SYSOUT=*                                                  00110016
+//SYSIN    DD *                                                         00120016
+//******************************************************************    00130016
+//* CHANGE THE PROGRAM NAME,PLAN NAME AND THE LOAD LIBRARY NAME         00140016
+//******************************************************************    00150016
+//SYSTSIN  DD *                                                         00160016
+ DSN SYSTEM(DSN1)                                                       00170016
+ RUN  PROGRAM(CLAIM02C) PLAN(TCHPL007) -                                00181030
+      LIB('TCHN007.CBEMF010.COBLOAD')                                   00190017
+ END                                                                    00200016
+/*                                                                      00210016
+//ALLWDPTR DD DSN=TCHN007.MFRP.ALLWD.TIME,DISP=SHR                      00220016
+//GRACEPTR DD DSN=TCHN007.MFRP.GRACE.TIME,DISP=SHR                      00230016
+//SYSIN DD DUMMY                                                        00240016
+//                                                                      00250016
+ RUN  PROGRAM(EEEE) PLAN(TCHPL007) -                                    00251030
+ RUN  PROGRAM(CLAIM02C) PLAN(TCHPL007) -                                00260029
+

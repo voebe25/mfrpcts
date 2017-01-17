@@ -1,0 +1,472 @@
+--*******************************************************************   00010000
+--               CREATE TABLE PREMIUM_PAID                              00020000
+--*******************************************************************   00030000
+--DROP TABLE PREMIUM_PAID;                                              00031076
+--DROP TABLE PREMIUM_LAPSED_TEMP;                                       00032048
+--DROP TABLE PREMIUM_LAPSED;                                            00033063
+--COMMIT;                                                               00034076
+                                                                        00035047
+--CREATE TABLE PREMIUM_PAID(                                            00040077
+--        APPLICANT_ID       CHAR(13)    NOT NULL PRIMARY KEY           00050077
+--       ,APPLICANT_NAME     CHAR(32)    NOT NULL                       00051077
+--       ,DOOR_NO            CHAR(10)    NOT NULL                       00060077
+--       ,STREET             CHAR(20)    NOT NULL                       00061077
+--       ,CITY               CHAR(20)    NOT NULL                       00062077
+--       ,COUNTRY_CODE       CHAR(3)     NOT NULL                       00063077
+--       ,PIN                NUMERIC(6)  NOT NULL                       00064077
+--       ,MOBILE             NUMERIC(10) NOT NULL                       00065077
+--       ,DATE_OF_BIRTH      CHAR(10)    NOT NULL                       00066077
+--       ,GENDER             CHAR(1)     NOT NULL                       00067077
+--       ,UNIQUE_ID          CHAR(10)    NOT NULL                       00068077
+--       ,ENROLLED_DATE      CHAR(10)    NOT NULL                       00069077
+--       ,LAST_PREMIUM_DATE       CHAR(10)    NOT NULL                  00069177
+--       )IN DBTCHN02.TSCEP01;                                          00070077
+--CREATE UNIQUE INDEX IX_PRE_PAID ON PREMIUM_PAID(APPLICANT_ID);        00080077
+--*******************************************************************   00090005
+--               CREATE TABLE PREMIUM_LAPSED_TEMP                       00100005
+--*******************************************************************   00110005
+--CREATE TABLE PREMIUM_LAPSED_TEMP(                                     00120071
+--        APPLICANT_ID1      CHAR(13)    NOT NULL  PRIMARY KEY          00130071
+--       ,APPLICANT_NAME1    CHAR(32)    NOT NULL                       00140071
+--       ,DOOR_NO1           CHAR(10)    NOT NULL                       00150071
+--       ,STREET1            CHAR(20)    NOT NULL                       00160071
+--       ,CITY1              CHAR(20)    NOT NULL                       00170071
+--       ,COUNTRY_CODE1      CHAR(3)     NOT NULL                       00180071
+--       ,PIN1               NUMERIC(6)  NOT NULL                       00190071
+--       ,MOBILE1            NUMERIC(10) NOT NULL                       00200071
+--       ,DATE_OF_BIRTH1     CHAR(10)    NOT NULL                       00210071
+--       ,GENDER1            CHAR(1)     NOT NULL                       00220071
+--       ,UNIQUE_ID1         CHAR(10)    NOT NULL                       00230071
+--       ,ENROLLED_DATE1     CHAR(10)    NOT NULL                       00240071
+--       ,PREMIUM_DATE       CHAR(10)    NOT NULL                       00250071
+--       ,DATE_TO_BE_PAID    CHAR(10)    NOT NULL                       00251071
+--       )IN DBTCHN02.TSCEP01;                                          00260071
+--CREATE UNIQUE INDEX IX_PRE_LAPT ON PREMIUM_LAPSED_TEMP(APPLICANT_ID1);00261071
+--*******************************************************************   00270011
+--               CREATE TABLE PREMIUM_LAPSED                            00280011
+--*******************************************************************   00290011
+--CREATE TABLE PREMIUM_LAPSED(                                          00300065
+--        APPLICANT_ID2       CHAR(13)    NOT NULL                      00310065
+--       ,APPLICANT_NAME2     CHAR(32)    NOT NULL                      00330065
+--       ,DOOR_NO2            CHAR(10)    NOT NULL                      00340065
+--       ,STREET2             CHAR(20)    NOT NULL                      00350065
+--       ,CITY2               CHAR(20)    NOT NULL                      00360065
+--       ,COUNTRY_CODE2       CHAR(3)     NOT NULL                      00370065
+--       ,PIN2                NUMERIC(6)  NOT NULL                      00380065
+--       ,MOBILE2             NUMERIC(10) NOT NULL                      00390065
+--       ,DATE_OF_BIRTH2      CHAR(10)    NOT NULL                      00400065
+--       ,GENDER2             CHAR(1)     NOT NULL                      00410065
+--       ,UNIQUE_ID2          CHAR(10)    NOT NULL                      00420065
+--       ,ENROLLED_DATE2      CHAR(10)    NOT NULL                      00430065
+--       ,PREMIUM_DATE2       CHAR(10)    NOT NULL                      00440065
+--       ,LAPSE_INDICATOR     CHAR(1)     NOT NULL                      00441065
+--       ,POLICY_LAPSED_TIMES NUMERIC(2)  NOT NULL                      00442065
+--       )IN DBTCHN02.TSCEP01;                                          00450065
+--*******************************************************************   00460012
+--               INSERTION ON TABLE PREMIUM_PAID                        00470012
+--*******************************************************************   00480012
+--INSERT INTO PREMIUM_PAID VALUES(                                      00490081
+--     '1100000000000','JANE COOPER','1000000001','SUNLAKE','CALIFORNIA'00500081
+--      ,'USA',601010,9810150000,'03/11/1994','F','AC-1045200'          00510081
+--      ,'07/01/2016','09/01/2016');                                    00520081
+--                                                                      00530081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00540081
+--       '1100000000001','MARY JANE','1000000002','NARAINA','NEW-DELHI' 00550081
+--      ,'IND',601011,9810150001,'10/21/1995','F','PC-1045205'          00560081
+--      ,'07/01/2016','09/01/2016');                                    00570081
+--                                                                      00580081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00590081
+--      '1100000000002','SAM AUSTIN','1000000003','KAROLBAGH','NEW-YORK'00600081
+--      ,'ARG',601012,9810150002,'12/01/1990','F','DL-1045210'          00610081
+--      ,'07/05/2016','09/10/2016');                                    00620081
+--                                                                      00630081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00640081
+--       '1100000000003','JENNIFER ANISTON','1000000004','BROOKFIEL'    00650081
+--      ,'NEW-JERSEY'                                                   00651081
+--      ,'AUS',601013,9810150003,'03/03/1988','F','AC-1045215'          00660081
+--      ,'07/01/2016','09/15/2016');                                    00670081
+--                                                                      00680081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00690081
+--       '1100000000004','MATHEW PERRY','1000000005','ST-TROPEZ'        00700081
+--      ,'MUMBAI'                                                       00710081
+--      ,'BGD',601014,9810150004,'02/04/1984','M','PC-1045220'          00720081
+--      ,'07/01/2016','09/01/2016');                                    00730081
+--                                                                      00740081
+--                                                                      00741081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00742081
+--       '1100000000005','DAVID SHWIMMER','1000000006','ASKABAN'        00743081
+--      ,'KOLKATA'                                                      00744081
+--      ,'BEL',601015,9810150005,'01/05/1989','M','DL-1045225'          00745081
+--      ,'07/05/2016','08/05/2016');                                    00746081
+--                                                                      00747081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00748081
+--       '1100000000006','COURTNEY COX','1000000007','TILAK-NAGAR'      00749081
+--      ,'MANIPUR'                                                      00749181
+--      ,'CMR',601016,9810150006,'04/06/1964','F','AC-1045230'          00749281
+--      ,'07/15/2016','08/15/2016');                                    00749381
+--                                                                      00749481
+--INSERT INTO PREMIUM_PAID VALUES(                                      00749581
+--       '1100000000007','MATLE BALNC','1000000008','RAJOURI-GARDEN'    00749681
+--      ,'CHENNAI'                                                      00749781
+--      ,'CAN',601017,9810150007,'04/07/1960','M','PC-1045235'          00749881
+--      ,'07/01/2016','08/21/2016');                                    00749981
+--                                                                      00750081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00751081
+--       '1100000000008','PHEOBE BUFFAY','1000000009','ROHINI'          00752081
+--      ,'LUCKNOW'                                                      00753081
+--      ,'CHL',601018,9810150008,'05/08/1971','F','DL-1045240'          00754081
+--      ,'07/01/2016','08/01/2016');                                    00755081
+--                                                                      00756081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00757081
+--       '1100000000009','LISA KUDROW','1000000010','CHANDNI-CHOWK'     00758081
+--      ,'GHAZIYABAD'                                                   00759081
+--      ,'CHN',601019,9810150009,'05/09/1974','F','AC-1045245'          00759181
+--      ,'07/01/2016','08/01/2016');                                    00759281
+--                                                                      00759381
+--INSERT INTO PREMIUM_PAID VALUES(                                      00759481
+--       '1100000000010','MARSHAL MATHEW','1000000011','NOIDA'          00759581
+--      ,'ALLAPI'                                                       00759681
+--      ,'COL',601020,9810150010,'06/10/1979','M','PC-1045250'          00759781
+--      ,'07/01/2016','08/01/2016');                                    00759881
+--                                                                      00759981
+--INSERT INTO PREMIUM_PAID VALUES(                                      00760081
+--       '1100000000011','JIM MORRISON','1000000012','GURGAON'          00761081
+--      ,'GURUGRAM'                                                     00762081
+--      ,'CZE',601021,9810150011,'06/11/1980','M','DL-1045255'          00763081
+--      ,'07/01/2016','08/01/2016');                                    00764081
+--                                                                      00765081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00766081
+--       '1100000000012','CURT KOBAIN','1000000013','MANYATA'           00767081
+--      ,'BANGALORE'                                                    00768081
+--      ,'EGY',601022,9810150012,'08/12/1990','M','AC-1045260'          00769081
+--      ,'07/01/2016','08/07/2016');                                    00769181
+--                                                                      00769281
+--INSERT INTO PREMIUM_PAID VALUES(                                      00769381
+--       '1100000000013','BRUCE WAYNE','1000000014','MALVIYE-NAGAR'     00769481
+--      ,'HYDERABAD'                                                    00769581
+--      ,'FRA',601023,9810150013,'09/13/1994','M','PC-1045265'          00769681
+--      ,'07/01/2016','08/01/2016');                                    00769781
+--                                                                      00769881
+--                                                                      00769981
+--INSERT INTO PREMIUM_PAID VALUES(                                      00770081
+--       '1100000000014','JOHN CENA','1000000015','HAUZ-KHAS'           00770181
+--      ,'VIZAG'                                                        00770281
+--      ,'GHA',601024,9810150014,'01/14/1993','M','DL-1045270'          00770381
+--      ,'07/01/2016','08/09/2016');                                    00770481
+--                                                                      00770581
+--                                                                      00770681
+--INSERT INTO PREMIUM_PAID VALUES(                                      00770781
+--       '1100000000015','CHRISTIAN BALE','1000000016','DEFF-COL'       00770881
+--      ,'INDORE'                                                       00770981
+--      ,'HKG',601025,9810150015,'10/15/1994','M','AC-1045275'          00771081
+--      ,'07/01/2016','08/01/2016');                                    00771181
+--                                                                      00771281
+--INSERT INTO PREMIUM_PAID VALUES(                                      00771381
+--       '1100000000016','HEATH LEDGER','1000000017','RITHALA'          00771481
+--      ,'JAIPUR'                                                       00771581
+--      ,'IND',601011,9810150016,'11/16/1992','M','PC-1045280'          00771681
+--      ,'07/01/2016','08/01/2016');                                    00771781
+                                                                        00771880
+                                                                        00771980
+--INSERT INTO PREMIUM_PAID VALUES(                                      00772081
+--       '1100000000017','SELENA GOMEZ','1000000018','SHADIPUR'         00772181
+--      ,'UDAIPUR'                                                      00772281
+--      ,'IRQ',601027,9810150017,'12/17/1988','F','DL-1045285'          00772381
+--      ,'07/01/2016','08/01/2016');                                    00772481
+--                                                                      00772581
+--                                                                      00772681
+--INSERT INTO PREMIUM_PAID VALUES(                                      00772781
+--       '1100000000018','KENNEDY MILES','1000000019','PRITAMPURA'      00772881
+--      ,'MOUNT ABU'                                                    00772981
+--      ,'IRN',601028,9810150018,'10/18/1983','M','AC-1045290'          00773081
+--      ,'07/01/2016','07/01/2016');                                    00773181
+--                                                                      00773281
+--                                                                      00773381
+--INSERT INTO PREMIUM_PAID VALUES(                                      00773481
+--       '1100000000019','CLAIRE AUSTIN','1000000020','NSP'             00773581
+--      ,'JABALPUR'                                                     00773681
+--      ,'JPN',601029,9810150019,'03/19/1984','F','PC-1045295'          00773781
+--      ,'07/01/2016','07/01/2016');                                    00773881
+--                                                                      00773981
+--                                                                      00774081
+--INSERT INTO PREMIUM_PAID VALUES(                                      00774181
+--       '1100000000020','PAUL MCCARTNEY','1000000021','KESHAV-PURAM'   00774281
+--      ,'SHANKARPUR'                                                   00774381
+--      ,'KEN',601030,9810150020,'02/20/1955','M','DL-1045300'          00774481
+--      ,'07/01/2016','07/01/2016');                                    00774581
+--                                                                      00774681
+--SELECT * FROM PREMIUM_PAID;                                           00775049
+--DELETE FROM PREMIUM_PAID WHERE APPLICANT_ID='1100000000006';          00780059
+--INSERT INTO PREMIUM_PAID VALUES(                                      00790070
+--       '1100000000021','JOHN LENNON','1000000022','KHANAIYA-NAGAR'    00800070
+--      ,'DEHRADUN'                                                     00810070
+--      ,'LUX',601031,9810150021,'02/21/1959','M','AC-1045305'          00820070
+--      ,'05/01/2016','07/01/2016');                                    00830070
+--                                                                      00840070
+--***************PAID_CUSTOMER_TABLE*****************                   00850071
+--                                                                      00860081
+-- CREATE TABLE PAID_CUSTOMER(                                          00870072
+--  APPLICANT_ID3          CHAR(13)  NOT NULL  PRIMARY KEY              00880072
+-- ,PAID_DATE3             CHAR(10)  NOT NULL                           00890072
+-- )IN DBTCHN02.TSCEP01;                                                00900072
+-- COMMIT;                                                              00910072
+--                                                                      00920072
+--CREATE UNIQUE INDEX IX_APPLICANT_ID3 ON PAID_CUSTOMER(APPLICANT_ID3); 00930072
+--COMMIT;                                                               00940072
+                                                                        00950072
+  INSERT INTO PAID_CUSTOMER VALUES                                      00960099
+  ('1100000000000','2016-09-10');                                       00970099
+                                                                        00990099
+  INSERT INTO PAID_CUSTOMER VALUES                                      01000099
+  ('1100000000001','2016-09-25');                                       01010099
+                                                                        01030099
+  INSERT INTO PAID_CUSTOMER VALUES                                      01040099
+  ('1100000000002','2016-09-27');                                       01050099
+                                                                        01070099
+  INSERT INTO PAID_CUSTOMER VALUES                                      01071099
+  ('1100000000003','2016-09-15');                                       01072099
+                                                                        01074099
+  INSERT INTO PAID_CUSTOMER VALUES                                      01075099
+  ('1100000000004','2016-09-15');                                       01076099
+                                                                        01078099
+  INSERT INTO PAID_CUSTOMER VALUES                                      01079099
+  ('1100000000005','2016-09-15');                                       01079199
+                                                                        01079399
+  INSERT INTO PAID_CUSTOMER VALUES                                      01079499
+  ('1100000000006','2016-09-15');                                       01079599
+                                                                        01079799
+  INSERT INTO PAID_CUSTOMER VALUES                                      01079899
+  ('1100000000007','2016-09-15');                                       01079999
+                                                                        01080199
+  INSERT INTO PAID_CUSTOMER VALUES                                      01080299
+  ('1100000000008','2016-09-15');                                       01080399
+                                                                        01080599
+  INSERT INTO PAID_CUSTOMER VALUES                                      01080699
+  ('1100000000009','2016-09-15');                                       01080799
+                                                                        01080999
+  INSERT INTO PAID_CUSTOMER VALUES                                      01081099
+  ('1100000000010','2016-09-01');                                       01081199
+                                                                        01081399
+--INSERT INTO PAID_CUSTOMER VALUES                                      01081499
+--('1100000000011','2016-08-26');                                       01081599
+                                                                        01081799
+  INSERT INTO PAID_CUSTOMER VALUES                                      01082099
+  ('1100000000099','2016-03-13');                                       01090099
+                                                                        01110099
+--               CREATE TABLE PREMIUM_PAID                              01120073
+--CREATE TABLE PREMIUM_PAID_TEMP(                                       01130075
+--        APPLICANT_ID1       CHAR(13)    NOT NULL PRIMARY KEY          01140075
+--       ,APPLICANT_NAME1     CHAR(32)    NOT NULL                      01150075
+--       ,DOOR_NO1            CHAR(10)    NOT NULL                      01160075
+--       ,STREET1             CHAR(20)    NOT NULL                      01170075
+--       ,CITY1               CHAR(20)    NOT NULL                      01180075
+--       ,COUNTRY_CODE1       CHAR(3)     NOT NULL                      01190075
+--       ,PIN1                NUMERIC(6)  NOT NULL                      01200075
+--       ,MOBILE1             NUMERIC(10) NOT NULL                      01210075
+--       ,DATE_OF_BIRTH1      CHAR(10)    NOT NULL                      01220075
+--       ,GENDER1             CHAR(1)     NOT NULL                      01230075
+--       ,UNIQUE_ID1          CHAR(10)    NOT NULL                      01240075
+--       ,ENROLLED_DATE1      CHAR(10)    NOT NULL                      01250075
+--       ,LAST_PREMIUM_DATE1  CHAR(10)    NOT NULL                      01260075
+--       ,EXPECTED_DATE1      CHAR(10)    NOT NULL                      01270075
+--       ,PAID_DATE1          CHAR(10)                                  01280075
+--                                                                      01290075
+--       )IN DBTCHN02.TSCEP01;                                          01300075
+--       COMMIT;                                                        01310075
+--CREATE UNIQUE INDEX IX_P1SERAID ON PREMIUM_PAID_TEMP(APPLICANT_ID1);  01320075
+--  COMMIT;                                                             01330075
+--                                                                      01340075
+--CREATE TABLE POL_LAPSED_TEMP(                                         01360079
+--        APPLICANT_ID2      CHAR(13)    NOT NULL PRIMARY KEY           01370079
+--       ,APPLICANT_NAME2    CHAR(32)    NOT NULL                       01380079
+--       ,DOOR_NO2           CHAR(10)    NOT NULL                       01390079
+--       ,STREET2            CHAR(20)    NOT NULL                       01400079
+--       ,CITY2              CHAR(20)    NOT NULL                       01410079
+--       ,COUNTRY_CODE2      CHAR(3)     NOT NULL                       01420079
+--       ,PIN2               NUMERIC(6)  NOT NULL                       01430079
+--       ,MOBILE2            NUMERIC(10) NOT NULL                       01440079
+--       ,DATE_OF_BIRTH2     CHAR(10)    NOT NULL                       01450079
+--       ,GENDER2            CHAR(1)     NOT NULL                       01460079
+--       ,UNIQUE_ID2         CHAR(10)    NOT NULL                       01470079
+--       ,ENROLLED_DATE2     CHAR(10)    NOT NULL                       01480079
+--       ,LAST_PREMIUM_DATE2 CHAR(10)    NOT NULL                       01490079
+--       )IN DBTCHN02.TSCEP01;                                          01500079
+--CREATE UNIQUE INDEX IX_P1SA2AID ON POL_LAPSED_TEMP(APPLICANT_ID2);    01510079
+--commit;                                                               01520079
+--               CREATE TABLE PREMIUM_PAID                              01521081
+--CREATE TABLE PREMIUM_PAID(                                            01522082
+--        APPLICANT_ID       CHAR(13)    NOT NULL PRIMARY KEY           01523082
+--       ,APPLICANT_NAME     CHAR(32)    NOT NULL                       01524082
+--       ,DOOR_NO            CHAR(10)    NOT NULL                       01525082
+--       ,STREET             CHAR(20)    NOT NULL                       01526082
+--       ,CITY               CHAR(20)    NOT NULL                       01527082
+--       ,COUNTRY_CODE       CHAR(3)     NOT NULL                       01528082
+--       ,PIN                NUMERIC(6)  NOT NULL                       01529082
+--       ,MOBILE             NUMERIC(10) NOT NULL                       01529182
+--       ,DATE_OF_BIRTH      CHAR(10)    NOT NULL                       01529282
+--       ,GENDER             CHAR(1)     NOT NULL                       01529382
+--       ,UNIQUE_ID          CHAR(10)    NOT NULL                       01529482
+--       ,ENROLLED_DATE      CHAR(10)    NOT NULL                       01529582
+--       ,LAST_PREMIUM_DATE  CHAR(10)    NOT NULL                       01529682
+--       )IN DBTCHN02.TSCEP01;                                          01529782
+--CREATE UNIQUE INDEX IX_P1saraID ON PREMIUM_PAID(APPLICANT_ID);        01529882
+  INSERT INTO PREMIUM_PAID VALUES(                                      01529999
+       '1100000000000','JANE COOPER','1000000001','SUNLAKE','CALIFORNIA'01530099
+        ,'USA',601010,9810150000,'03/11/1994','F','AC-1045200'          01530199
+        ,'2016-04-15','2016-09-10');                                    01530299
+                                                                        01530399
+  INSERT INTO PREMIUM_PAID VALUES(                                      01530499
+         '1100000000001','MARY JANE','1000000002','NARAINA','NEW-DELHI' 01530599
+        ,'IND',601011,9810150001,'10/21/1995','F','PC-1045205'          01530699
+        ,'2016-04-15','2016-09-15');                                    01530799
+                                                                        01530899
+  INSERT INTO PREMIUM_PAID VALUES(                                      01530999
+        '1100000000002','SAM AUSTIN','1000000003','KAROLBAGH','NEW-YORK'01531099
+        ,'ARG',601012,9810150002,'12/01/1990','F','DL-1045210'          01531199
+        ,'2016-04-15','2016-09-13');                                    01531299
+                                                                        01531399
+  INSERT INTO PREMIUM_PAID VALUES(                                      01531499
+         '1100000000003','JENNIFER ANISTON','1000000004','BROOKFIEL'    01531599
+        ,'NEW-JERSEY'                                                   01531699
+        ,'AUS',601013,9810150003,'03/03/1988','F','AC-1045215'          01531799
+        ,'2016-04-15','2016-09-15');                                    01531899
+                                                                        01531999
+  INSERT INTO PREMIUM_PAID VALUES(                                      01532099
+         '1100000000004','MATHEW PERRY','1000000005','ST-TROPEZ'        01532199
+        ,'MUMBAI'                                                       01532299
+        ,'BGD',601014,9810150004,'02/04/1984','M','PC-1045220'          01532399
+        ,'2016-04-15','2016-09-15');                                    01532499
+                                                                        01532599
+                                                                        01532699
+  INSERT INTO PREMIUM_PAID VALUES(                                      01532799
+         '1100000000005','DAVID SHWIMMER','1000000006','ASKABAN'        01532899
+        ,'KOLKATA'                                                      01532999
+        ,'BEL',601015,9810150005,'01/05/1989','M','DL-1045225'          01533099
+        ,'2016-04-15','2016-09-15');                                    01533199
+                                                                        01533299
+  INSERT INTO PREMIUM_PAID VALUES(                                      01533399
+         '1100000000006','COURTNEY COX','1000000007','TILAK-NAGAR'      01533499
+        ,'MANIPUR'                                                      01533599
+        ,'CMR',601016,9810150006,'04/06/1964','F','AC-1045230'          01533699
+        ,'2016-04-15','2016-09-15');                                    01533799
+                                                                        01533899
+  INSERT INTO PREMIUM_PAID VALUES(                                      01533999
+         '1100000000007','MATLE BALNC','1000000008','RAJOURI-GARDEN'    01534099
+        ,'CHENNAI'                                                      01534199
+        ,'CAN',601017,9810150007,'04/07/1960','M','PC-1045235'          01534299
+        ,'2016-04-15','2016-09-15');                                    01534399
+                                                                        01534499
+  INSERT INTO PREMIUM_PAID VALUES(                                      01534599
+         '1100000000008','PHEOBE BUFFAY','1000000009','ROHINI'          01534699
+        ,'LUCKNOW'                                                      01534799
+        ,'CHL',601018,9810150008,'05/08/1971','F','DL-1045240'          01534899
+        ,'2016-04-15','2016-09-15');                                    01534999
+                                                                        01535099
+  INSERT INTO PREMIUM_PAID VALUES(                                      01535199
+         '1100000000009','LISA KUDROW','1000000010','CHANDNI-CHOWK'     01535299
+        ,'GHAZIYABAD'                                                   01535399
+        ,'CHN',601019,9810150009,'05/09/1974','F','AC-1045245'          01535499
+        ,'2016-04-15','2016-09-15');                                    01535599
+                                                                        01535699
+  INSERT INTO PREMIUM_PAID VALUES(                                      01535799
+         '1100000000010','MARSHAL MATHEW','1000000011','NOIDA'          01535899
+        ,'ALLAPI'                                                       01535999
+        ,'COL',601020,9810150010,'06/10/1979','M','PC-1045250'          01536099
+        ,'2016-04-15','2016-09-01');                                    01536199
+                                                                        01536299
+  INSERT INTO PREMIUM_PAID VALUES(                                      01536399
+         '1100000000011','JIM MORRISON','1000000012','GURGAON'          01536499
+        ,'GURUGRAM'                                                     01536599
+        ,'CZE',601021,9810150011,'06/11/1980','M','DL-1045255'          01536699
+        ,'2016-04-15','2016-08-26');                                    01536799
+                                                                        01536899
+--INSERT INTO PREMIUM_PAID VALUES(                                      01536987
+--       '1100000000012','CURT KOBAIN','1000000013','MANYATA'           01537087
+--      ,'BANGALORE'                                                    01537187
+--      ,'EGY',601022,9810150012,'08/12/1990','M','AC-1045260'          01537287
+--      ,'2016-04-15','2015-04-01');                                    01537387
+--INSERT INTO PREMIUM_PAID VALUES(                                      01537487
+--       '1100000000013','BRUCE WAYNE','1000000014','MALVIYE-NAGAR'     01537587
+--      ,'HYDERABAD'                                                    01537687
+--      ,'FRA',601023,9810150013,'09/13/1994','M','PC-1045265'          01537787
+--      ,'2016-04-15','2015-04-01');                                    01537887
+--                                                                      01537987
+--                                                                      01538087
+--INSERT INTO PREMIUM_PAID VALUES(                                      01538187
+--       '1100000000014','JOHN CENA','1000000015','HAUZ-KHAS'           01538287
+--      ,'VIZAG'                                                        01538387
+--      ,'GHA',601024,9810150014,'01/14/1993','M','DL-1045270'          01538487
+--      ,'2016-04-15','2015-04-01');                                    01538587
+--                                                                      01538687
+--                                                                      01538787
+--INSERT INTO PREMIUM_PAID VALUES(                                      01538887
+--       '1100000000015','CHRISTIAN BALE','1000000016','DEFF-COL'       01538987
+--      ,'INDORE'                                                       01539087
+--      ,'HKG',601025,9810150015,'10/15/1994','M','AC-1045275'          01539187
+--      ,'2016-04-15','2015-04-01');                                    01539287
+--                                                                      01539387
+--INSERT INTO PREMIUM_PAID VALUES(                                      01539487
+--       '1100000000016','HEATH LEDGER','1000000017','RITHALA'          01539587
+--      ,'JAIPUR'                                                       01539687
+--      ,'IND',601011,9810150016,'11/16/1992','M','PC-1045280'          01539787
+--      ,'2015-04-01','2015-04-01');                                    01539887
+--                                                                      01539987
+--                                                                      01540087
+--INSERT INTO PREMIUM_PAID VALUES(                                      01540187
+--       '1100000000017','SELENA GOMEZ','1000000018','SHADIPUR'         01540287
+--      ,'UDAIPUR'                                                      01540387
+--      ,'IRQ',601027,9810150017,'12/17/1988','F','DL-1045285'          01540487
+--      ,'2015-04-01','2015-04-01');                                    01540587
+--                                                                      01540687
+--                                                                      01540787
+--INSERT INTO PREMIUM_PAID VALUES(                                      01540887
+--       '1100000000018','KENNEDY MILES','1000000019','PRITAMPURA'      01540987
+--      ,'MOUNT ABU'                                                    01541087
+--      ,'IRN',601028,9810150018,'10/18/1983','M','AC-1045290'          01541187
+--      ,'2015-04-01','2015-09-21');                                    01541287
+--                                                                      01541387
+--                                                                      01541487
+--INSERT INTO PREMIUM_PAID VALUES(                                      01541587
+--       '1100000000019','CLAIRE AUSTIN','1000000020','NSP'             01541687
+--      ,'JABALPUR'                                                     01541787
+--      ,'JPN',601029,9810150019,'03/19/1984','F','PC-1045295'          01541887
+--      ,'2015-04-01','2015-09-15');                                    01541987
+--                                                                      01542087
+--                                                                      01542187
+--INSERT INTO PREMIUM_PAID VALUES(                                      01542287
+--       '1100000000020','PAUL MCCARTNEY','1000000021','KESHAV-PURAM'   01542387
+--      ,'SHANKARPUR'                                                   01542487
+--      ,'KEN',601030,9810150020,'02/20/1955','M','DL-1045300'          01542587
+--      ,'2015-04-01','2015-09-01');                                    01542687
+--                commit;                                               01542787
+--******************POLICY LAPSED TABLE**********************           01543479
+--                                                                      01544083
+--CREATE TABLE POLICY_LAPSED(                                           01550080
+--        APPLICANT_ID4        CHAR(13)    NOT NULL PRIMARY KEY         01560080
+--       ,APPLICANT_NAME4      CHAR(32)    NOT NULL                     01570080
+--       ,DOOR_NO4             CHAR(10)    NOT NULL                     01580080
+--       ,STREET4              CHAR(20)    NOT NULL                     01590080
+--       ,CITY4                CHAR(20)    NOT NULL                     01600080
+--       ,COUNTRY_CODE4        CHAR(3)     NOT NULL                     01610080
+--       ,PIN4                 NUMERIC(6)  NOT NULL                     01620080
+--       ,MOBILE4              NUMERIC(10) NOT NULL                     01630080
+--       ,DATE_OF_BIRTH4       CHAR(10)    NOT NULL                     01640080
+--       ,GENDER4              CHAR(1)     NOT NULL                     01650080
+--       ,UNIQUE_ID4           CHAR(10)    NOT NULL                     01660080
+--       ,ENROLLED_DATE4       CHAR(10)    NOT NULL                     01670080
+--       ,LAST_PREMIUM_DATE4   CHAR(10)    NOT NULL                     01680080
+--       ,LAPSE_INDICATOR4     CHAR(1)     NOT NULL                     01690080
+--       ,POLICY_LAPSED_TIMES4 INTEGER     NOT NULL                     01700080
+--       )IN DBTCHN02.TSCEP01;                                          01710080
+--       COMMIT;                                                        01720080
+--                                                                      01730080
+-- CREATE UNIQUE INDEX IX_APPLICANTXID4                                 01740080
+-- ON POLICY_LAPSED(APPLICANT_ID4);                                     01750080
+  INSERT INTO PREMIUM_PAID VALUES(                                      01760099
+         '1100000000999','MANISHA','1000000222','KESHAV-PURAM'          01770099
+        ,'SHANKARPUR'                                                   01780099
+        ,'KEN',601030,9813234340,'02/20/1955','f','DL-1045301'          01790099
+        ,'2016-04-01','2016-03-13');                                    01800099
+                         commit;                                        01810099
+--DELETE FROM PREMIUM_PAID WHERE APPLICANT_ID='1100000000999'           01820098
+

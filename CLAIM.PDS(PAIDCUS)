@@ -1,0 +1,22 @@
+      ******************************************************************
+      * DCLGEN TABLE(PAID_CUSTOMER)                                    *
+      *        LIBRARY(TCHN007.CLAIM.DB2(PAIDCUS))                     *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+           EXEC SQL DECLARE PAID_CUSTOMER TABLE
+           ( APPLICANT_ID3                  CHAR(13) NOT NULL,
+             PAID_DATE3                     CHAR(10) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE PAID_CUSTOMER                      *
+      ******************************************************************
+       01  DCLPAID-CUSTOMER.
+           10 APPLICANT-ID3        PIC X(13).
+           10 PAID-DATE3           PIC X(10).
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 2       *
+      ******************************************************************
+

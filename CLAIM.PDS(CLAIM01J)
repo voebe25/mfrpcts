@@ -1,0 +1,29 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001000
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0)                          00002000
+//*--------------------------------------------------------------       00030000
+//*  STEP0001 : KSDS CREATION                                           00040000
+//*--------------------------------------------------------------       00050000
+//STEP0001 EXEC PGM=IDCAMS                                              00060000
+//SYSPRINT DD   SYSOUT=*                                                00070000
+//SYSOUT   DD   SYSOUT=*                                                00080000
+//SYSIN    DD   *                                                       00090000
+  DELETE TCHN007.CLAIM.INPUT.VSAM                                       00100000
+  IF LASTCC=8 THEN                                                      00110000
+  SET MAXCC=0                                                           00120000
+  DEFINE CLUSTER(NAME(TCHN007.CLAIM.INPUT.VSAM)    -                    00130000
+                 TRK(1 1)                          -                    00140000
+                 RECSZ(250 250)                    -                    00150000
+                 CISZ(4096)                        -                    00160000
+                 INDEXED                           -                    00170000
+                 KEYS(13 0)                        -                    00180000
+                )                                                       00190000
+/*                                                                      00200000
+//STEP0002 EXEC PGM=IDCAMS                                              00210000
+//SYSPRINT DD   SYSOUT=*                                                00220000
+//SYSOUT   DD   SYSOUT=*                                                00230000
+//SYSIN    DD   *                                                       00260000
+  REPRO IDS(TCHN007.CLAIM.INPUT.PS)   -                                 00270000
+        ODS(TCHN007.CLAIM.INPUT.VSAM)                                   00280000
+/*                                                                      00290000
+//                                                                      00300000
+

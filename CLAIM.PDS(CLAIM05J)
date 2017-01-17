@@ -1,0 +1,46 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00010000
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0),RESTART=STEP0004         00020000
+//STEP0001 EXEC PGM=IDCAMS                                              00030000
+//SYSPRINT DD   SYSOUT=*                                                00040000
+//SYSOUT   DD   SYSOUT=*                                                00050000
+//SYSIN    DD   *                                                       00060000
+  DEFINE GDG(NAME(TCHN007.CLAIM.REPORT.BACKUP)  -                       00070000
+             LIMIT(6)                          -                        00080000
+             NOEMPTY                           -                        00090000
+             SCRATCH                           -                        00100000
+             FOR(0365)                         -                        00110000
+             )                                                          00120000
+/*                                                                      00130000
+//STEP0002 EXEC PGM=IEBGENER                                            00140000
+//SYSPRINT DD   SYSOUT=*                                                00150000
+//SYSOUT   DD   SYSOUT=*                                                00160000
+//SYSUT1   DD   DSN=TCHN007.CLAIM.REPORT,DISP=SHR                       00170000
+//SYSUT2   DD   DSN=TCHN007.CLAIM.REPORT.BACKUP(+1),                    00180000
+//         DISP=(NEW,CATLG,DELETE),                                     00190000
+//         SPACE=(TRK,(3,2,0),RLSE),                                    00200000
+//         DCB=(LRECL=80,BLKSIZE=8000,RECFM=FB),                        00210000
+//         RETPD=(0365)                                                 00220000
+//SYSIN    DD   DUMMY                                                   00230000
+//STEP0003 EXEC PGM=IDCAMS                                              00250000
+//SYSPRINT DD   SYSOUT=*                                                00260000
+//SYSOUT   DD   SYSOUT=*                                                00270000
+//SYSIN    DD   *                                                       00280000
+  DEFINE GDG(NAME(TCHN007.CLAIM.REPORT1.BACKUP)  -                      00290000
+             LIMIT(6)                            -                      00300000
+             NOEMPTY                             -                      00310000
+             SCRATCH                             -                      00320000
+             FOR(0365)                           -                      00330000
+             )                                                          00340000
+/*                                                                      00350000
+//STEP0004 EXEC PGM=IEBGENER                                            00360000
+//SYSPRINT DD   SYSOUT=*                                                00370000
+//SYSOUT   DD   SYSOUT=*                                                00380000
+//SYSUT1   DD   DSN=TCHN007.CLAIM.REPORT1,DISP=SHR                      00390000
+//SYSUT2   DD   DSN=TCHN007.CLAIM.REPORT1.BACKUP(+1),                   00400000
+//         DISP=(NEW,CATLG,DELETE),                                     00410000
+//         SPACE=(TRK,(3,2,0),RLSE),                                    00420000
+//         DCB=(LRECL=80,BLKSIZE=8000,RECFM=FB),                        00430000
+//         RETPD=(0365)                                                 00440000
+//SYSIN    DD   DUMMY                                                   00450000
+//                                                                      00460000
+

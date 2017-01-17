@@ -1,0 +1,32 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001001
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(200,0),PRTY=15                00002006
+//********************************************************************  00030000
+//*   THIS STEP RUNS THE LOAD MODULE.                                   00040000
+//********************************************************************  00050000
+//TRNSDBRN EXEC PGM=IKJEFT01,DYNAMNBR=20                                00060000
+//STEPLIB  DD  DISP=SHR,DSN=DSN811.SDSNLOAD                             00070000
+//SYSTSPRT DD SYSOUT=*                                                  00080000
+//SYSPRINT DD SYSOUT=*                                                  00090000
+//SYSUDUMP DD SYSOUT=*                                                  00100000
+//SYSOUT   DD SYSOUT=*                                                  00110000
+//SYSIN    DD *                                                         00120000
+//******************************************************************    00130000
+//* CHANGE THE PROGRAM NAME,PLAN NAME AND THE LOAD LIBRARY NAME         00140000
+//******************************************************************    00150000
+//SYSTSIN  DD *                                                         00160000
+ DSN SYSTEM(DSN1)                                                       00170000
+ RUN  PROGRAM(CLAIM03C) PLAN(TCHPL007) -                                00180008
+      LIB('TCHN007.CBEMF010.COBLOAD')                                   00190001
+ END                                                                    00200000
+/*                                                                      00210000
+//RPRT1 DD DSN=TCHN007.CLAIM.RPRT1,                                     00220008
+//         DISP=(OLD,CATLG,DELETE),                                     00221008
+//         SPACE=(TRK,(1,1),RLSE),                                      00221104
+//         DCB=(LRECL=200,RECFM=FB,BLKSIZE=20000)                       00222004
+//RPRT2 DD DSN=TCHN007.CLAIM.RPRT2,                                     00223008
+//         DISP=(OLD,CATLG,DELETE),                                     00224008
+//         SPACE=(TRK,(1,1),RLSE),                                      00225004
+//         DCB=(LRECL=200,RECFM=FB,BLKSIZE=20000)                       00226004
+//SYSIN DD DUMMY                                                        00240000
+//                                                                      00250000
+

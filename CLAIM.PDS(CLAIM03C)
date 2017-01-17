@@ -1,0 +1,500 @@
+       IDENTIFICATION DIVISION.                                         00010074
+       PROGRAM-ID.     EDIT.                                            00020074
+       ENVIRONMENT DIVISION.                                            00030074
+       INPUT-OUTPUT SECTION.                                            00040074
+       FILE-CONTROL.                                                    00050074
+           SELECT BO001-RPRT1    ASSIGN       TO RPRT1                  00060075
+                                 ORGANIZATION IS SEQUENTIAL             00070074
+                                 ACCESS MODE  IS SEQUENTIAL             00080074
+                                 FILE STATUS  IS W01-FST-STAT1.         00090075
+                                                                        00100074
+           SELECT BO001-RPRT2    ASSIGN       TO RPRT2                  00110075
+                                 ORGANIZATION IS SEQUENTIAL             00120075
+                                 ACCESS MODE  IS SEQUENTIAL             00130075
+                                 FILE STATUS  IS W01-FST-STAT2.         00140075
+                                                                        00150075
+       DATA DIVISION.                                                   00170074
+       FILE SECTION.                                                    00180074
+       FD BO001-RPRT1.                                                  00190075
+       01 BO001-RPRT1-REC.                                              00200075
+          05 W01-APP-ID                        PIC X(13).               00210077
+          05 FILLER                            PIC X(01).               00211077
+          05 W01-APP-NAME                      PIC X(32).               00212077
+          05 FILLER                            PIC X(01).               00213077
+          05 W01-DOOR-NO                       PIC X(10).               00214077
+          05 FILLER                            PIC X(01).               00215077
+          05 W01-STREET                        PIC X(20).               00216078
+          05 FILLER                            PIC X(01).               00217078
+          05 W01-CITY                          PIC X(20).               00218078
+          05 FILLER                            PIC X(01).               00219078
+          05 W01-CCODE                         PIC X(03).               00219178
+          05 FILLER                            PIC X(01).               00219278
+          05 W01-PIN                           PIC 9(06).               00219399
+          05 FILLER                            PIC X(01).               00219478
+          05 W01-MOBILE                        PIC 9(10).               00219599
+          05 FILLER                            PIC X(01).               00219678
+          05 W01-DOB                           PIC X(10).               00219778
+          05 FILLER                            PIC X(01).               00219878
+          05 W01-GENDER                        PIC X(01).               00219978
+          05 FILLER                            PIC X(01).               00220078
+          05 W01-UNIQUE-ID                     PIC X(10).               00220178
+          05 FILLER                            PIC X(01).               00220278
+          05 W01-ENR-DATE                      PIC X(10).               00220378
+          05 FILLER                            PIC X(01).               00220478
+          05 W01-PREM-DATE                     PIC X(10).               00220578
+          05 FILLER                            PIC X(01).               00220698
+          05 W01-EXP-DATE                      PIC X(10).               00220798
+          05 FILLER                            PIC X(01).               00220898
+          05 W01-PAID-DATE                     PIC X(10).               00220998
+          05 FILLER                            PIC X(11).               00221099
+                                                                        00221198
+       FD BO001-RPRT2.                                                  00230075
+       01 BO001-RPRT2-REC.                                              00240075
+          05 W01-APP-ID1                       PIC X(13).               00250078
+          05 FILLER                            PIC X(01).               00251078
+          05 W01-APP-NAME1                     PIC X(32).               00252078
+          05 FILLER                            PIC X(01).               00253078
+          05 W01-DOOR-NO1                      PIC X(10).               00254078
+          05 FILLER                            PIC X(01).               00255078
+          05 W01-STREET1                       PIC X(20).               00256078
+          05 FILLER                            PIC X(01).               00257078
+          05 W01-CITY1                         PIC X(20).               00258078
+          05 FILLER                            PIC X(01).               00259078
+          05 W01-CCODE1                        PIC X(03).               00259178
+          05 FILLER                            PIC X(01).               00259278
+          05 W01-PIN1                          PIC 9(06).               00259399
+          05 FILLER                            PIC X(01).               00259478
+          05 W01-MOBILE1                       PIC 9(10).               00259599
+          05 FILLER                            PIC X(01).               00259678
+          05 W01-DOB1                          PIC X(10).               00259778
+          05 FILLER                            PIC X(01).               00259878
+          05 W01-GENDER1                       PIC X(01).               00259978
+          05 FILLER                            PIC X(01).               00260078
+          05 W01-UNIQUE-ID1                    PIC X(10).               00260178
+          05 FILLER                            PIC X(01).               00260278
+          05 W01-ENR-DATE1                     PIC X(10).               00260378
+          05 FILLER                            PIC X(01).               00260478
+          05 W01-PREM-DATE1                    PIC X(10).               00260578
+          05 FILLER                            PIC X(01).               00260678
+          05 W01-LAPSE-IND                     PIC X(01).               00260788
+          05 FILLER                            PIC X(01).               00260878
+          05 W01-POL-TIMES                     PIC 9(02).               00260999
+          05 FILLER                            PIC X(28).               00261099
+                                                                        00261174
+       WORKING-STORAGE SECTION.                                         00271076
+                                                                        00272078
+           EXEC SQL INCLUDE SQLCA                                       00280074
+           END-EXEC                                                     00290074
+                                                                        00300074
+           EXEC SQL INCLUDE PREMPAID                                    00310074
+           END-EXEC                                                     00320074
+                                                                        00330074
+           EXEC SQL INCLUDE PREPAIDT                                    00340074
+           END-EXEC                                                     00350074
+                                                                        00360074
+           EXEC SQL INCLUDE PAIDCUS                                     00370074
+           END-EXEC                                                     00380074
+                                                                        00390074
+           EXEC SQL INCLUDE POLLAP                                      00400074
+           END-EXEC                                                     00410074
+                                                                        00420074
+           EXEC SQL INCLUDE POLLAPT                                     00430074
+           END-EXEC                                                     00440074
+                                                                        00450074
+           EXEC SQL                                                     00460074
+             DECLARE CS-CUR1 CURSOR WITH HOLD FOR                       00470074
+             SELECT                                                     00480079
+                 APPLICANT_ID1                                          00482097
+                ,APPLICANT_NAME1                                        00483097
+                ,DOOR_NO1                                               00484097
+                ,STREET1                                                00485097
+                ,CITY1                                                  00486097
+                ,COUNTRY_CODE1                                          00487097
+                ,PIN1                                                   00488097
+                ,MOBILE1                                                00489097
+                ,DATE_OF_BIRTH1                                         00489197
+                ,GENDER1                                                00489297
+                ,UNIQUE_ID1                                             00489397
+                ,ENROLLED_DATE1                                         00489497
+                ,LAST_PREMIUM_DATE1                                     00489597
+                ,EXPECTED_DATE1                                         00489697
+                ,PAID_DATE1                                             00489797
+             FROM                                                       00489884
+                 PREMIUM_PAID_TEMP                                      00489997
+           END-EXEC                                                     00490074
+                                                                        00500074
+           EXEC SQL                                                     00501088
+             DECLARE CS-CUR2 CURSOR WITH HOLD FOR                       00502088
+             SELECT                                                     00503088
+                 APPLICANT_ID4                                          00504089
+                ,APPLICANT_NAME4                                        00505089
+                ,DOOR_NO4                                               00506089
+                ,STREET4                                                00507089
+                ,CITY4                                                  00508089
+                ,COUNTRY_CODE4                                          00509089
+                ,PIN4                                                   00509189
+                ,MOBILE4                                                00509289
+                ,DATE_OF_BIRTH4                                         00509389
+                ,GENDER4                                                00509489
+                ,UNIQUE_ID4                                             00509589
+                ,ENROLLED_DATE4                                         00509689
+                ,LAST_PREMIUM_DATE4                                     00509789
+                ,LAPSE_INDICATOR4                                       00509889
+                ,POLICY_LAPSED_TIMES4                                   00509989
+             FROM                                                       00510088
+                 POLICY_LAPSED                                          00510188
+           END-EXEC                                                     00510288
+                                                                        00510388
+       01 W01-FST-STAT1                  PIC  9(02).                    00511088
+          88 C10W-SUCCESS                             VALUE 00.         00520074
+          88 C10W-NORECORD                            VALUE 10.         00530074
+                                                                        00540074
+       01 W01-FST-STAT2                  PIC  9(02).                    00550083
+          88 C20W-SUCCESS                             VALUE 00.         00560074
+          88 C20W-NORECORD                            VALUE 10.         00570074
+                                                                        00580074
+       01 W01-SQLCODE                    PIC S9(03).                    00590074
+          88 C01W-SUCCESS                             VALUE +000.       00600074
+          88 C01W-NORECORD                            VALUE +100.       00610074
+          88 C01W-DUPLICATE                           VALUE -803.       00620074
+          88 C01W-DEADLOCK                            VALUE -911 -913.  00630074
+                                                                        00640074
+       01 W01-ERROR.                                                    00650074
+          05 W01-ERROR-LEN               PIC S9(04) COMP VALUE +800.    00660074
+          05 W01-ERROR-TXT               PIC X(80) OCCURS 10 TIMES.     00670074
+                                                                        00680074
+       01 W01-ERR-LEN                    PIC S9(09) COMP VALUE +80.     00690074
+       01 W01-SUB                        PIC 9(02).                     00700074
+                                                                        00710079
+       PROCEDURE DIVISION.                                              00920074
+                                                                        00930074
+       0000-MAIN-PARA.                                                  00940074
+                                                                        00950074
+           PERFORM 1000-INITIALIZE-PARA                                 00960074
+              THRU 1000-INITIALIZE-PARA                                 00970074
+                                                                        00980074
+           PERFORM 2000-PROCESS-PARA                                    00990074
+              THRU 2000-PROCESS-PARA                                    01000074
+                                                                        01010074
+           PERFORM 9000-TERMINATE-PARA                                  01020074
+              THRU 9000-TERMINATE-PARA.                                 01030074
+                                                                        01040074
+       0000-MAIN-PARA-EXIT.                                             01050074
+           EXIT.                                                        01060074
+                                                                        01070074
+                                                                        01080074
+                                                                        01090074
+                                                                        01100074
+                                                                        01110074
+       1000-INITIALIZE-PARA.                                            01120074
+                                                                        01130074
+           INITIALIZE W01-SQLCODE                                       01160074
+                      W01-FST-STAT1                                     01170079
+                      W01-FST-STAT2.                                    01171079
+                                                                        01180074
+       1000-INITIALIZE-PARA-EXIT.                                       01190074
+           EXIT.                                                        01200074
+                                                                        01210074
+                                                                        01220074
+                                                                        01230074
+                                                                        01240074
+                                                                        01250074
+       2000-PROCESS-PARA.                                               01260074
+                                                                        01270074
+           PERFORM 3000-OPEN-CURSOR-PARA                                01280074
+              THRU 3000-OPEN-CURSOR-PARA-EXIT                           01290074
+                                                                        01300074
+           PERFORM 3100-OPEN-FILE-PARA                                  01310074
+              THRU 3100-OPEN-FILE-PARA-EXIT                             01320074
+                                                                        01360074
+           PERFORM 4000-FETCH-CURSOR-PARA                               01370074
+              THRU 4000-FETCH-CURSOR-PARA-EXIT                          01380074
+              UNTIL NOT C01W-SUCCESS                                    01390079
+                                                                        01400074
+           MOVE +000 TO W01-SQLCODE                                     01400189
+                                                                        01400289
+           PERFORM 4004-FETCH-CURSOR-PARA                               01401089
+              THRU 4004-FETCH-CURSOR-PARA-EXIT                          01402089
+              UNTIL NOT C01W-SUCCESS                                    01403089
+                                                                        01404089
+           PERFORM 8000-CLOSE-CURSOR-PARA                               01410074
+              THRU 8000-CLOSE-CURSOR-PARA-EXIT                          01420074
+                                                                        01430074
+           PERFORM 8100-CLOSE-FILE-PARA                                 01440074
+              THRU 8100-CLOSE-FILE-PARA-EXIT.                           01450074
+                                                                        01460074
+       2000-PROCESS-PARA-EXIT.                                          01470074
+           EXIT.                                                        01480074
+                                                                        01490074
+                                                                        01500074
+                                                                        01510074
+                                                                        01520074
+                                                                        01530074
+       2100-DSNTIAR-PARA.                                               01540074
+                                                                        01550074
+           CALL 'DSNTIAR' USING SQLCA                                   01560074
+                                W01-ERROR                               01570074
+                                W01-ERR-LEN                             01580074
+           PERFORM VARYING W01-SUB FROM 1 BY 1 UNTIL W01-SUB > 10       01590074
+               DISPLAY W01-ERROR-TXT ( W01-SUB )                        01600074
+           END-PERFORM.                                                 01610074
+                                                                        01620074
+       2100-DSNTIAR-PARA-EXIT.                                          01630074
+           EXIT.                                                        01640074
+                                                                        01650074
+                                                                        01660074
+                                                                        01670074
+                                                                        01680074
+                                                                        01690074
+       3000-OPEN-CURSOR-PARA.                                           01700074
+                                                                        01710074
+           EXEC SQL                                                     01720074
+               OPEN CS-CUR1                                             01730074
+           END-EXEC                                                     01740074
+           MOVE SQLCODE TO W01-SQLCODE                                  01750074
+           IF ( C01W-SUCCESS )                                          01760074
+              CONTINUE                                                  01770074
+           ELSE IF ( C01W-DEADLOCK )                                    01780074
+              DISPLAY 'DEADLOCK IN OPENING CURSOR ' W01-SQLCODE         01790074
+           ELSE                                                         01800074
+              PERFORM 2100-DSNTIAR-PARA                                 01810074
+                 THRU 2100-DSNTIAR-PARA-EXIT                            01820074
+           END-IF.                                                      01830074
+                                                                        01840074
+           EXEC SQL                                                     01841089
+               OPEN CS-CUR2                                             01842089
+           END-EXEC                                                     01843089
+           MOVE SQLCODE TO W01-SQLCODE                                  01844089
+           IF ( C01W-SUCCESS )                                          01845089
+              CONTINUE                                                  01846089
+           ELSE IF ( C01W-DEADLOCK )                                    01847089
+              DISPLAY 'DEADLOCK IN OPENING CURSOR2 ' W01-SQLCODE        01848089
+           ELSE                                                         01849089
+              PERFORM 2100-DSNTIAR-PARA                                 01849189
+                 THRU 2100-DSNTIAR-PARA-EXIT                            01849289
+           END-IF.                                                      01849389
+                                                                        01849489
+       3000-OPEN-CURSOR-PARA-EXIT.                                      01850074
+           EXIT.                                                        01860074
+                                                                        01870074
+                                                                        01880074
+                                                                        01890074
+                                                                        01900074
+                                                                        01910074
+       3100-OPEN-FILE-PARA.                                             01920074
+                                                                        01930074
+           OPEN OUTPUT BO001-RPRT1                                      01940079
+           IF ( C10W-SUCCESS )                                          01950074
+              CONTINUE                                                  01960074
+           ELSE                                                         01970074
+              DISPLAY ' ERROR IN OPENING FILE1 ' W01-FST-STAT1          01980082
+           END-IF.                                                      01990074
+           OPEN OUTPUT BO001-RPRT2                                      02000079
+           IF ( C20W-SUCCESS )                                          02010074
+              CONTINUE                                                  02020074
+           ELSE                                                         02030074
+              DISPLAY ' ERROR IN OPENING FILE2 ' W01-FST-STAT2          02040082
+           END-IF.                                                      02050074
+                                                                        02060074
+       3100-OPEN-FILE-PARA-EXIT.                                        02070074
+           EXIT.                                                        02080074
+                                                                        02090074
+                                                                        02100074
+                                                                        02110074
+                                                                        02120074
+                                                                        02130074
+                                                                        02370074
+       4000-FETCH-CURSOR-PARA.                                          02380074
+           INITIALIZE DCLPREMIUM-PAID                                   02390074
+                      DCLPREMIUM-PAID-TEMP                              02400074
+                      DCLPAID-CUSTOMER                                  02410074
+                      DCLPOLICY-LAPSED                                  02420074
+                      DCLPOL-LAPSED-TEMP                                02430074
+           EXEC SQL                                                     02440074
+               FETCH CS-CUR1 INTO                                       02450074
+              :APPLICANT-ID1                                            02451099
+             ,:APPLICANT-NAME1                                          02453099
+             ,:DOOR-NO1                                                 02455099
+             ,:STREET1                                                  02457099
+             ,:CITY1                                                    02459099
+             ,:COUNTRY-CODE1                                            02459299
+             ,:PIN1                                                     02459499
+             ,:MOBILE1                                                  02459699
+             ,:DATE-OF-BIRTH1                                           02459899
+             ,:GENDER1                                                  02460099
+             ,:UNIQUE-ID1                                               02460299
+             ,:ENROLLED-DATE1                                           02460499
+             ,:LAST-PREMIUM-DATE1                                       02460699
+             ,:EXPECTED-DATE1                                           02460797
+             ,:PAID-DATE1                                               02460897
+           END-EXEC                                                     02470074
+           DISPLAY SQLCODE '  <><<  ' DCLPREMIUM-PAID                   02480074
+           MOVE SQLCODE TO W01-SQLCODE                                  02490074
+           IF ( C01W-SUCCESS )                                          02500074
+              PERFORM 4100-WRITE-TEMP-PARA                              02510081
+                 THRU 4100-WRITE-TEMP-PARA-EXIT                         02520081
+           ELSE IF ( C01W-NORECORD )                                    02530074
+              CONTINUE                                                  02540074
+           ELSE IF ( C01W-DEADLOCK )                                    02550074
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE        02560074
+           ELSE                                                         02570074
+              PERFORM 2100-DSNTIAR-PARA                                 02580074
+                 THRU 2100-DSNTIAR-PARA-EXIT                            02590074
+           END-IF.                                                      02600074
+                                                                        02610074
+       4000-FETCH-CURSOR-PARA-EXIT.                                     02620074
+           EXIT.                                                        02630074
+                                                                        02640074
+       4004-FETCH-CURSOR-PARA.                                          02641089
+                                                                        02642089
+           EXEC SQL                                                     02647089
+               FETCH CS-CUR2 INTO                                       02648093
+              :APPLICANT-ID4                                            02649090
+             ,:APPLICANT-NAME4                                          02649190
+             ,:DOOR-NO4                                                 02649290
+             ,:STREET4                                                  02649390
+             ,:CITY4                                                    02649490
+             ,:COUNTRY-CODE4                                            02649590
+             ,:PIN4                                                     02649690
+             ,:MOBILE4                                                  02649790
+             ,:DATE-OF-BIRTH4                                           02649890
+             ,:GENDER4                                                  02649990
+             ,:UNIQUE-ID4                                               02650090
+             ,:ENROLLED-DATE4                                           02650190
+             ,:LAST-PREMIUM-DATE4                                       02650290
+             ,:LAPSE-INDICATOR4                                         02650390
+             ,:POLICY-LAPSED-TIMES4                                     02650490
+           END-EXEC                                                     02650589
+           DISPLAY SQLCODE '  <><<  ' DCLPREMIUM-PAID                   02650689
+           MOVE SQLCODE TO W01-SQLCODE                                  02650789
+           IF ( C01W-SUCCESS )                                          02650889
+              PERFORM 4200-WRITE-TEMP-PARA                              02650990
+                 THRU 4200-WRITE-TEMP-PARA-EXIT                         02651090
+           ELSE IF ( C01W-NORECORD )                                    02651189
+              CONTINUE                                                  02651289
+           ELSE IF ( C01W-DEADLOCK )                                    02651389
+              DISPLAY 'DEADLOCK IN FETCHING CURSOR ' W01-SQLCODE        02651489
+           ELSE                                                         02651589
+              PERFORM 2100-DSNTIAR-PARA                                 02651689
+                 THRU 2100-DSNTIAR-PARA-EXIT                            02651789
+           END-IF.                                                      02651889
+                                                                        02651989
+       4004-FETCH-CURSOR-PARA-EXIT.                                     02652089
+           EXIT.                                                        02652189
+                                                                        02652289
+                                                                        02653089
+                                                                        02660074
+                                                                        02670074
+      * ------------      SELECTING PAY DATE FROM CASHIER'S TABLE       02680074
+                                                                        02690074
+       4100-WRITE-TEMP-PARA.                                            02700081
+                                                                        02710074
+           MOVE APPLICANT-ID1            TO W01-APP-ID                  02711097
+           MOVE APPLICANT-NAME1          TO W01-APP-NAME                02712097
+           MOVE DOOR-NO1                 TO W01-DOOR-NO                 02713097
+           MOVE STREET1                  TO W01-STREET                  02714097
+           MOVE CITY1                    TO W01-CITY                    02715097
+           MOVE COUNTRY-CODE1            TO W01-CCODE                   02716097
+           MOVE PIN1                     TO W01-PIN                     02717097
+           MOVE MOBILE1                  TO W01-MOBILE                  02718097
+           MOVE DATE-OF-BIRTH1           TO W01-DOB                     02719097
+           MOVE GENDER1                  TO W01-GENDER                  02719197
+           MOVE UNIQUE-ID1               TO W01-UNIQUE-ID               02719297
+           MOVE ENROLLED-DATE1           TO W01-ENR-DATE                02719397
+           MOVE LAST-PREMIUM-DATE1       TO W01-PREM-DATE               02719497
+           MOVE EXPECTED-DATE1           TO W01-EXP-DATE                02719798
+           MOVE PAID-DATE1               TO W01-PAID-DATE               02719898
+                                                                        02719985
+           WRITE BO001-RPRT1-REC.                                       02720082
+                                                                        02730082
+                                                                        02960074
+       4100-WRITE-TEMP-PARA-EXIT.                                       02970081
+           EXIT.                                                        02980074
+                                                                        02990074
+       4200-WRITE-TEMP-PARA.                                            03000090
+                                                                        03010090
+           MOVE APPLICANT-ID4            TO W01-APP-ID1                 03020091
+           MOVE APPLICANT-NAME4          TO W01-APP-NAME1               03030094
+           MOVE DOOR-NO4                 TO W01-DOOR-NO1                03040091
+           MOVE STREET4                  TO W01-STREET1                 03050091
+           MOVE CITY4                    TO W01-CITY1                   03060091
+           MOVE COUNTRY-CODE4            TO W01-CCODE1                  03070091
+           MOVE PIN4                     TO W01-PIN1                    03080091
+           MOVE MOBILE4                  TO W01-MOBILE1                 03090091
+           MOVE DATE-OF-BIRTH4           TO W01-DOB1                    03100091
+           MOVE GENDER4                  TO W01-GENDER1                 03110091
+           MOVE UNIQUE-ID4               TO W01-UNIQUE-ID1              03120091
+           MOVE ENROLLED-DATE4           TO W01-ENR-DATE1               03130091
+           MOVE LAST-PREMIUM-DATE4       TO W01-PREM-DATE1              03140091
+           MOVE LAPSE-INDICATOR4         TO W01-LAPSE-IND               03150091
+           MOVE POLICY-LAPSED-TIMES4     TO W01-POL-TIMES               03160091
+                                                                        03161091
+           WRITE BO001-RPRT2-REC.                                       03200091
+                                                                        03210090
+       4200-WRITE-TEMP-PARA-EXIT.                                       03230090
+           EXIT.                                                        03240090
+                                                                        03250090
+       8000-CLOSE-CURSOR-PARA.                                          10810074
+                                                                        10820074
+           EXEC SQL                                                     10830074
+               CLOSE CS-CUR1                                            10840074
+           END-EXEC                                                     10850074
+           MOVE SQLCODE TO W01-SQLCODE                                  10860074
+           IF ( C01W-SUCCESS )                                          10870074
+              CONTINUE                                                  10880074
+           ELSE IF ( C01W-DEADLOCK )                                    10890074
+              DISPLAY 'DEADLOCK IN CLOSING CURSOR ' W01-SQLCODE         10900074
+           ELSE                                                         10910074
+              PERFORM 2100-DSNTIAR-PARA                                 10920074
+                 THRU 2100-DSNTIAR-PARA-EXIT                            10930074
+           END-IF.                                                      10940074
+                                                                        10950074
+           EXEC SQL                                                     10951093
+               CLOSE CS-CUR2                                            10952093
+           END-EXEC                                                     10953093
+           MOVE SQLCODE TO W01-SQLCODE                                  10954093
+           IF ( C01W-SUCCESS )                                          10955093
+              CONTINUE                                                  10956093
+           ELSE IF ( C01W-DEADLOCK )                                    10957093
+              DISPLAY 'DEADLOCK IN CLOSING CURSOR ' W01-SQLCODE         10958093
+           ELSE                                                         10959093
+              PERFORM 2100-DSNTIAR-PARA                                 10959193
+                 THRU 2100-DSNTIAR-PARA-EXIT                            10959293
+           END-IF.                                                      10959393
+                                                                        10959493
+       8000-CLOSE-CURSOR-PARA-EXIT.                                     10960074
+           EXIT.                                                        10970074
+                                                                        10980074
+                                                                        10990074
+                                                                        11000074
+                                                                        11010074
+                                                                        11020074
+       8100-CLOSE-FILE-PARA.                                            11030074
+                                                                        11040074
+           CLOSE BO001-RPRT1                                            11050081
+           IF ( C10W-SUCCESS )                                          11060074
+              CONTINUE                                                  11070074
+           ELSE                                                         11080074
+              DISPLAY ' ERROR IN CLOSING FILE1 ' W01-FST-STAT1          11090082
+           END-IF.                                                      11100074
+           CLOSE BO001-RPRT2                                            11110081
+           IF ( C20W-SUCCESS )                                          11120074
+              CONTINUE                                                  11130074
+           ELSE                                                         11140074
+              DISPLAY ' ERROR IN CLOSING FILE2 ' W01-FST-STAT2          11150082
+           END-IF.                                                      11160074
+                                                                        11170074
+       8100-CLOSE-FILE-PARA-EXIT.                                       11180074
+           EXIT.                                                        11190074
+                                                                        11200074
+                                                                        11210074
+                                                                        11220074
+                                                                        11230074
+                                                                        11240074
+       9000-TERMINATE-PARA.                                             11250074
+                                                                        11260074
+           STOP RUN.                                                    11270074
+                                                                        11280074
+       9000-TERMINATE-PARA-EXIT.                                        11290074
+           EXIT.                                                        11300074
+

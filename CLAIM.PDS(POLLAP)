@@ -1,0 +1,49 @@
+      ******************************************************************
+      * DCLGEN TABLE(POLICY_LAPSED)                                    *
+      *        LIBRARY(TCHN007.CLAIM.DB2(POLLAP))                      *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+           EXEC SQL DECLARE POLICY_LAPSED TABLE
+           ( APPLICANT_ID4                  CHAR(13) NOT NULL,
+             APPLICANT_NAME4                CHAR(32) NOT NULL,
+             DOOR_NO4                       CHAR(10) NOT NULL,
+             STREET4                        CHAR(20) NOT NULL,
+             CITY4                          CHAR(20) NOT NULL,
+             COUNTRY_CODE4                  CHAR(3) NOT NULL,
+             PIN4                           DECIMAL(6, 0) NOT NULL,
+             MOBILE4                        DECIMAL(10, 0) NOT NULL,
+             DATE_OF_BIRTH4                 CHAR(10) NOT NULL,
+             GENDER4                        CHAR(1) NOT NULL,
+             UNIQUE_ID4                     CHAR(10) NOT NULL,
+             ENROLLED_DATE4                 CHAR(10) NOT NULL,
+             LAST_PREMIUM_DATE4             CHAR(10) NOT NULL,
+             LAPSE_INDICATOR4               CHAR(1) NOT NULL,
+             POLICY_LAPSED_TIMES4           INTEGER NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE POLICY_LAPSED                      *
+      ******************************************************************
+       01  DCLPOLICY-LAPSED.
+           10 APPLICANT-ID4        PIC X(13).
+           10 APPLICANT-NAME4      PIC X(32).
+           10 DOOR-NO4             PIC X(10).
+           10 STREET4              PIC X(20).
+           10 CITY4                PIC X(20).
+           10 COUNTRY-CODE4        PIC X(3).
+           10 PIN4                 PIC S9(6)V USAGE COMP-3.
+           10 MOBILE4              PIC S9(10)V USAGE COMP-3.
+           10 DATE-OF-BIRTH4       PIC X(10).
+           10 GENDER4              PIC X(1).
+           10 UNIQUE-ID4           PIC X(10).
+           10 ENROLLED-DATE4       PIC X(10).
+           10 LAST-PREMIUM-DATE4   PIC X(10).
+           10 LAPSE-INDICATOR4     PIC X(1).
+           10 POLICY-LAPSED-TIMES4
+              PIC S9(9) USAGE COMP.
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 15      *
+      ******************************************************************
+

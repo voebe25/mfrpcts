@@ -1,0 +1,381 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID.   MFRP.                                              00020000
+       ENVIRONMENT DIVISION.                                            00030000
+       INPUT-OUTPUT SECTION.                                            00040000
+       FILE-CONTROL.                                                    00050000
+           SELECT BI001-PS0001 ASSIGN       TO BI1PTR                   00060000
+                               ORGANIZATION IS SEQUENTIAL               00070000
+                               ACCESS MODE  IS SEQUENTIAL               00080000
+                               FILE STATUS  IS W01-FS-STAT.             00090000
+                                                                        00100000
+           SELECT BO002-ERROR1 ASSIGN       TO BO2ERR                   00110000
+                               ORGANIZATION IS SEQUENTIAL               00120000
+                               ACCESS MODE  IS SEQUENTIAL               00130000
+                               FILE STATUS  IS W02-FS-STAT.             00140000
+                                                                        00150000
+       DATA DIVISION.                                                   00160000
+       FILE SECTION.                                                    00170000
+       FD BI001-PS0001.                                                 00180000
+           COPY IPBOOK.                                                 00190000
+       FD BO002-ERROR1.                                                 00200000
+           COPY ERRBOOK.                                                00210000
+                                                                        00220000
+       WORKING-STORAGE SECTION.                                         00230000
+       01 W01-FS-STAT                          PIC 9(02).               00240000
+          88 C01W-SUCCESS                                 VALUE 00.     00250000
+          88 C01W-NORECORD                                VALUE 10.     00260000
+                                                                        00270000
+       01 W02-FS-STAT                          PIC 9(02).               00280000
+          88 C02W-SUCCESS                                 VALUE 00.     00290000
+          88 C02W-NORECORD                                VALUE 10.     00300000
+                                                                        00310000
+       PROCEDURE DIVISION.                                              00320000
+       0000-MAIN-PARA.                                                  00330000
+           PERFORM 1000-INITIALIZE-PARA                                 00340000
+              THRU 1000-INITIALIZE-PARA-EXIT                            00350000
+                                                                        00360000
+           PERFORM 2000-PROCESS-PARA                                    00370000
+              THRU 2000-PROCESS-PARA-EXIT                               00380000
+                                                                        00390000
+           PERFORM 9000-TERMINATE-PARA                                  00400000
+              THRU 9000-TERMINATE-PARA-EXIT.                            00410000
+       0000-MAIN-PARA-EXIT.                                             00420000
+           EXIT.                                                        00430000
+                                                                        00440000
+       1000-INITIALIZE-PARA.                                            00450000
+           INITIALIZE W01-FS-STAT                                       00460000
+                      W02-FS-STAT.                                      00470000
+       1000-INITIALIZE-PARA-EXIT.                                       00480000
+           EXIT.                                                        00490000
+                                                                        00500000
+       2000-PROCESS-PARA.                                               00510000
+           PERFORM 3000-OPEN-FILE-PARA                                  00520000
+              THRU 3000-OPEN-FILE-PARA-EXIT                             00530000
+                                                                        00540000
+           PERFORM 4000-READ-FILE-PARA                                  00550000
+              THRU 4000-READ-FILE-PARA-EXIT                             00560000
+           UNTIL NOT C01W-SUCCESS                                       00570000
+                                                                        00580000
+           PERFORM 8000-CLOSE-FILE-PARA                                 00590000
+              THRU 8000-CLOSE-FILE-PARA-EXIT.                           00600000
+       2000-PROCESS-PARA-EXIT.                                          00610000
+           EXIT.                                                        00620000
+                                                                        00630000
+       3000-OPEN-FILE-PARA.                                             00640000
+           OPEN INPUT BI001-PS0001                                      00650000
+           IF ( C01W-SUCCESS )                                          00660000
+               CONTINUE                                                 00670000
+           ELSE                                                         00680000
+               DISPLAY 'ERROR IN OPENING INPUT FILE ' W01-FS-STAT       00690000
+           END-IF                                                       00700000
+                                                                        00710000
+           OPEN OUTPUT BO002-ERROR1                                     00720000
+           IF ( C02W-SUCCESS )                                          00730000
+               CONTINUE                                                 00740000
+           ELSE                                                         00750000
+               DISPLAY 'ERROR IN OPENING ERROR FILE ' W01-FS-STAT       00760000
+           END-IF.                                                      00770000
+       3000-OPEN-FILE-PARA-EXIT.                                        00780000
+           EXIT.                                                        00790000
+                                                                        00800000
+       4000-READ-FILE-PARA.                                             00810000
+           READ BI001-PS0001                                            00820000
+           END-READ                                                     00830000
+           IF ( C01W-SUCCESS )                                          00840000
+              PERFORM 4100-VALIDATION-PARA                              00850000
+                 THRU 4100-VALIDATION-PARA-EXIT                         00860000
+           ELSE IF ( C01W-NORECORD )                                    00870000
+              CONTINUE                                                  00880000
+           ELSE                                                         00890000
+              DISPLAY 'ERROR IN READING INPUT FILE ' W01-FS-STAT        00900000
+           END-IF.                                                      00910000
+       4000-READ-FILE-PARA-EXIT.                                        00920000
+           EXIT.                                                        00930000
+                                                                        00940000
+       4100-VALIDATION-PARA.                                            00950000
+      * VALIDATION : ID                                                 00960000
+                                                                        00970000
+           IF ( ( W01-ID    IS GREATER THAN SPACES )        AND         00980000
+              ( ( W01-ID    IS NOT ALPHABETIC      )        OR          00990000
+                ( W01-ID    IS NOT NUMERIC         ) )      AND         01000000
+                                                                        01010000
+      * VALIDATION : NAME                                               01020000
+                                                                        01030000
+              (   W01-NAME  IS ALPHABETIC          )        AND         01040000
+              (   W01-NAME  IS GREATER THAN SPACES )        AND         01050000
+                                                                        01060000
+      * VALIDATION : DOOR-NO                                            01070000
+                                                                        01080000
+              ( ( W01-DOOR-NO IS GREATER THAN SPACES )      AND         01090000
+              ( ( W01-DOOR-NO IS NOT ALPHABETIC      )      OR          01100000
+                ( W01-DOOR-NO IS NOT NUMERIC         ) ) )  AND         01110000
+                                                                        01120000
+                                                                        01130000
+      * VALIDATION : STREET                                             01140000
+                                                                        01150000
+              ( ( W01-STREET  IS GREATER THAN SPACES )      AND         01160000
+              ( ( W01-STREET  IS NOT ALPHABETIC      )      OR          01170000
+                ( W01-STREET  IS NOT NUMERIC         ) ) )  AND         01180000
+                                                                        01190000
+                                                                        01200000
+      * VALIDATION : CITY                                               01210000
+                                                                        01220000
+              ( ( W01-CITY    IS GREATER THAN SPACES )      AND         01230000
+              ( ( W01-CITY    IS NOT ALPHABETIC      )      OR          01240000
+                ( W01-CITY    IS NOT NUMERIC         ) ) )  AND         01250000
+                                                                        01260000
+      * VALIDATION : CC                                                 01270000
+                                                                        01280000
+              (   W01-CC    IS ALPHABETIC          )        AND         01290000
+              (   W01-CC    IS GREATER THAN SPACES )        AND         01300000
+                                                                        01310000
+                                                                        01320000
+      * VALIDATION : PIN                                                01330000
+                                                                        01340000
+              (   W01-PIN   IS NUMERIC             )        AND         01350000
+              (   W01-PIN   IS GREATER THAN SPACES )        AND         01360000
+                                                                        01370000
+                                                                        01380000
+      * VALIDATION : MOB                                                01390000
+                                                                        01400000
+              (   W01-MOB   IS NUMERIC             )        AND         01410000
+              (   W01-MOB   IS GREATER THAN SPACES )        AND         01420000
+                                                                        01430000
+                                                                        01440000
+      * VALIDATION : DOB                                                01450000
+                                                                        01460000
+              (   W01-DOB(1:2)  IS NUMERIC             )        AND     01470000
+              (   W01-DOB(1:2)  IS GREATER THAN SPACES )        AND     01480000
+              (   W01-DOB(1:2)  < 13                   )        AND     01490000
+              (   W01-DOB(1:2)  > 0                    )        AND     01500000
+              (   W01-DOB(4:2)  IS NUMERIC             )        AND     01510000
+              (   W01-DOB(4:2)  IS GREATER THAN SPACES )        AND     01520000
+              (   W01-DOB(4:2)  < 32                   )        AND     01530000
+              (   W01-DOB(4:2)  > 0                    )        AND     01540000
+              (   W01-DOB(7:4)  > 0                    )        AND     01550000
+              (   W01-DOB(7:4)  IS NUMERIC             )        AND     01560000
+              (   W01-DOB(7:4)  IS GREATER THAN SPACES )        AND     01570000
+                                                                        01580000
+      * VALIDATION : GENDER                                             01590000
+                                                                        01600000
+              (   W01-GENDER = 'O'                  )           OR      01610000
+              (   W01-GENDER = 'M'                  )           OR      01620000
+              (   W01-GENDER = 'F'                  )   AND             01630000
+                                                                        01640000
+      * VALIDATION : UID                                                01650000
+                                                                        01660000
+                ( W01-UID   IS GREATER THAN SPACES )        AND         01670000
+              ( ( W01-UID   IS NOT ALPHABETIC      )        OR          01680000
+                ( W01-UID   IS NOT NUMERIC         ) )      AND         01690000
+                                                                        01700000
+      * VALIDATION : EOD                                                01710000
+                                                                        01720000
+              (   W01-EOD(1:2)  IS NUMERIC             )        AND     01730000
+              (   W01-EOD(1:2)  IS GREATER THAN SPACES )        AND     01740000
+              (   W01-EOD(1:2)  < 13                   )        AND     01750000
+              (   W01-EOD(1:2)  > 0                    )        AND     01760000
+              (   W01-EOD(4:2)  IS NUMERIC             )        AND     01770000
+              (   W01-EOD(4:2)  IS GREATER THAN SPACES )        AND     01780000
+              (   W01-EOD(4:2)  < 32                   )        AND     01790000
+              (   W01-EOD(4:2)  > 0                    )        AND     01800000
+              (   W01-EOD(7:4)  > 0                    )        AND     01810000
+              (   W01-EOD(7:4)  IS NUMERIC             )        AND     01820000
+              (   W01-EOD(7:4)  IS GREATER THAN SPACES )        AND     01830000
+                                                                        01840000
+                                                                        01850000
+      * VALIDATION : LPD                                                01860000
+                                                                        01870000
+              (   W01-LPD(1:2)  IS NUMERIC             )        AND     01880000
+              (   W01-LPD(1:2)  IS GREATER THAN SPACES )        AND     01890000
+              (   W01-LPD(1:2)  < 13                   )        AND     01900000
+              (   W01-LPD(1:2)  > 0                    )        AND     01910000
+              (   W01-LPD(4:2)  IS NUMERIC             )        AND     01920000
+              (   W01-LPD(4:2)  IS GREATER THAN SPACES )        AND     01930000
+              (   W01-LPD(4:2)  < 32                   )        AND     01940000
+              (   W01-LPD(4:2)  > 0                    )        AND     01950000
+              (   W01-LPD(7:4)  > 0                    )        AND     01960000
+              (   W01-LPD(7:4)  IS NUMERIC             )        AND     01970000
+              (   W01-LPD(7:4)  IS GREATER THAN SPACES ) )              01980000
+                                                                        01990000
+                                                                        02000000
+                                                                        02010000
+                                                                        02020000
+               PERFORM 4200-CALC-DIFF-PARA                              02030000
+                  THRU 4200-CALC-DIFF-PARA-EXIT                         02040000
+           ELSE                                                         02050000
+               PERFORM 4300-ERROR-PARA                                  02060000
+                  THRU 4300-ERROR-PARA-EXIT                             02070000
+           END-IF.                                                      02080000
+       4100-VALIDATION-PARA-EXIT.                                       02090000
+           EXIT.                                                        02100000
+                                                                        02110000
+       4200-CALC-DIFF-PARA.                                             02120000
+      */////////////////////////                                        02130000
+           DISPLAY 'IN CALC DIFF PARA'.                                 02140000
+       4200-CALC-DIFF-PARA-EXIT.                                        02150000
+           EXIT.                                                        02160000
+                                                                        02170000
+       4300-ERROR-PARA.                                                 02180000
+           INITIALIZE BO002-ERROR1-REC                                  02190000
+      *    MOVE LOW-VALUES TO BO002-ERROR1-REC                          02200000
+           MOVE W01-ID              TO W02-ID                           02210000
+           MOVE W01-NAME            TO W02-NAME                         02220000
+           MOVE W01-DOOR-NO         TO W02-DOOR-NO                      02230000
+           MOVE W01-STREET          TO W02-STREET                       02240000
+           MOVE W01-CITY            TO W02-CITY                         02250000
+           MOVE W01-CC              TO W02-CC                           02260000
+           MOVE W01-PIN             TO W02-PIN                          02270000
+           MOVE W01-MOB             TO W02-MOB                          02280000
+           MOVE W01-DOB             TO W02-DOB                          02290000
+           MOVE W01-GENDER          TO W02-GENDER                       02300000
+           MOVE W01-UID             TO W02-UID                          02310000
+           MOVE W01-EOD             TO W02-EOD                          02320000
+           MOVE W01-LPD             TO W02-LPD                          02330000
+      * ERR ID                                                          02340000
+                                                                        02350000
+           IF (   W02-ID     IS =   SPACES     )                        02360000
+                MOVE 'ID' TO W02-ERR1                                   02370000
+           END-IF.                                                      02380000
+                                                                        02390000
+      * ERR NAME                                                        02400000
+                                                                        02410000
+           IF ( ( W02-NAME   IS =   SPACES     )           OR           02420000
+                ( W02-NAME   IS NOT ALPHABETIC ) )                      02430000
+                MOVE 'NAME' TO W02-ERR2                                 02440000
+           END-IF.                                                      02450000
+                                                                        02460000
+      * ERR DOOR-NO                                                     02470000
+                                                                        02480000
+           IF (   W02-DOOR-NO IS =   SPACES     )                       02490000
+                MOVE 'DOOR' TO W02-ERR3                                 02500000
+           END-IF.                                                      02510000
+                                                                        02520000
+                                                                        02530000
+      * ERR STREET                                                      02540000
+                                                                        02550000
+           IF (   W02-STREET  IS =   SPACES     )                       02560000
+                MOVE 'STREET' TO W02-ERR4                               02570000
+           END-IF.                                                      02580000
+                                                                        02590000
+                                                                        02600000
+      * ERR CITY                                                        02610000
+                                                                        02620000
+           IF (   W02-CITY    IS =   SPACES     )                       02630000
+                MOVE 'CITY' TO W02-ERR5                                 02640000
+           END-IF.                                                      02650000
+                                                                        02660000
+                                                                        02670000
+      * ERR CC                                                          02680000
+                                                                        02690000
+           IF ( ( W02-CC     IS =   SPACES     )           OR           02700000
+                ( W02-CC     IS NOT ALPHABETIC ) )                      02710000
+                MOVE 'CC' TO W02-ERR6                                   02720000
+           END-IF.                                                      02730000
+                                                                        02740000
+                                                                        02750000
+      * ERR PIN                                                         02760000
+                                                                        02770000
+           IF ( ( W02-PIN    IS =   SPACES     )           OR           02780000
+                ( W02-PIN    IS NOT NUMERIC    ) )                      02790000
+                MOVE 'PIN' TO W02-ERR7                                  02800000
+           END-IF.                                                      02810000
+                                                                        02820000
+                                                                        02830000
+      * ERR MOB                                                         02840000
+                                                                        02850000
+           IF ( ( W02-MOB    IS =   SPACES     )           OR           02860000
+                ( W02-MOB    IS NOT NUMERIC    ) )                      02870000
+                MOVE 'MOB' TO W02-ERR8                                  02880000
+           END-IF.                                                      02890000
+                                                                        02900000
+                                                                        02910000
+      * ERR DOB                                                         02920000
+                                                                        02930000
+           IF ( ( W02-DOB(1:2)  IS =   SPACES     )           OR        02940000
+                ( W02-DOB(1:2)  IS NOT NUMERIC    )           OR        02950000
+                ( W02-DOB(4:2)  IS =   SPACES     )           OR        02960000
+                ( W02-DOB(4:2)  IS NOT NUMERIC    )           OR        02970000
+                ( W02-DOB(7:4)  IS =   SPACES     )           OR        02980000
+                ( W02-DOB(7:4)  IS NOT NUMERIC    )           OR        02990000
+                ( W02-DOB(1:2)  > 12              )           OR        03000000
+                ( W02-DOB(1:2)  < 1               )           OR        03010000
+                ( W02-DOB(4:2)  > 31              )           OR        03020000
+                ( W02-DOB(4:2)  < 1               ) )                   03030000
+                MOVE 'DOB' TO W02-ERR9                                  03040000
+           END-IF.                                                      03050000
+                                                                        03060000
+                                                                        03070000
+      * ERR GENDER                                                      03080000
+                                                                        03090000
+           IF   ( W02-GENDER NOT = 'O'         )             OR         03100000
+                ( W02-GENDER NOT = 'M'         )             OR         03110000
+                ( W02-GENDER NOT = 'F'         )                        03120000
+                MOVE 'GEN' TO W02-ERR10                                 03130000
+           END-IF.                                                      03140000
+                                                                        03150000
+      * ERR UID                                                         03160000
+                                                                        03170000
+           IF (   W02-UID    IS =   SPACES     )                        03180000
+                MOVE 'UID' TO W02-ERR11                                 03190000
+           END-IF.                                                      03200000
+                                                                        03210000
+                                                                        03220000
+      * ERR EOD                                                         03230000
+                                                                        03240000
+           IF ( ( W02-EOD(1:2)  IS =   SPACES     )           OR        03250000
+                ( W02-EOD(1:2)  IS NOT NUMERIC    )           OR        03260000
+                ( W02-EOD(4:2)  IS =   SPACES     )           OR        03270000
+                ( W02-EOD(4:2)  IS NOT NUMERIC    )           OR        03280000
+                ( W02-EOD(7:4)  IS =   SPACES     )           OR        03290000
+                ( W02-EOD(7:4)  IS NOT NUMERIC    )           OR        03300000
+                ( W02-EOD(1:2)  > 12              )           OR        03310000
+                ( W02-EOD(1:2)  < 1               )           OR        03320000
+                ( W02-EOD(4:2)  > 31              )           OR        03330000
+                ( W02-EOD(4:2)  < 1               ) )                   03340000
+                MOVE 'EOD' TO W02-ERR12                                 03350000
+           END-IF.                                                      03360000
+                                                                        03370000
+                                                                        03380000
+                                                                        03390000
+      * ERR LPD                                                         03400000
+                                                                        03410000
+           IF ( ( W02-LPD(1:2)  IS =   SPACES     )           OR        03420000
+                ( W02-LPD(1:2)  IS NOT NUMERIC    )           OR        03430000
+                ( W02-LPD(4:2)  IS =   SPACES     )           OR        03440000
+                ( W02-LPD(4:2)  IS NOT NUMERIC    )           OR        03450000
+                ( W02-LPD(7:4)  IS =   SPACES     )           OR        03460000
+                ( W02-LPD(7:4)  IS NOT NUMERIC    )           OR        03470000
+                ( W02-LPD(1:2)  > 12              )           OR        03480000
+                ( W02-LPD(1:2)  < 1               )           OR        03490000
+                ( W02-LPD(4:2)  > 31              )           OR        03500000
+                ( W02-LPD(4:2)  < 1               ) )                   03510000
+                MOVE 'LPD' TO W02-ERR13                                 03520000
+           END-IF.                                                      03530000
+                                                                        03540000
+                                                                        03550000
+           WRITE BO002-ERROR1-REC.                                      03560000
+       4300-ERROR-PARA-EXIT.                                            03570000
+           EXIT.                                                        03580000
+                                                                        03590000
+       8000-CLOSE-FILE-PARA.                                            03600000
+           CLOSE BI001-PS0001                                           03610000
+           IF ( C01W-SUCCESS )                                          03620000
+              CONTINUE                                                  03630000
+           ELSE                                                         03640000
+              DISPLAY 'ERROR IN CLOSING INPUT FILE ' W01-FS-STAT        03650000
+           END-IF                                                       03660000
+                                                                        03670000
+           CLOSE BO002-ERROR1                                           03680000
+           IF ( C02W-SUCCESS )                                          03690000
+              CONTINUE                                                  03700000
+           ELSE                                                         03710000
+              DISPLAY 'ERROR IN CLOSING ERROR FILE ' W02-FS-STAT        03720000
+           END-IF.                                                      03730000
+       8000-CLOSE-FILE-PARA-EXIT.                                       03740000
+           EXIT.                                                        03750000
+                                                                        03760000
+       9000-TERMINATE-PARA.                                             03770000
+           STOP RUN.                                                    03780000
+       9000-TERMINATE-PARA-EXIT.                                        03790000
+           EXIT.                                                        03800000
+

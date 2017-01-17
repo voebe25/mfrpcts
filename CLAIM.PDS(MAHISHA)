@@ -1,0 +1,843 @@
+       IDENTIFICATION DIVISION.                                         00010001
+       PROGRAM-ID.             MAHISHA.                                 00020001
+                                                                        00030001
+       ENVIRONMENT DIVISION.                                            00040001
+       DATA DIVISION.                                                   00050001
+       WORKING-STORAGE SECTION.                                         00060001
+                                                                        00070001
+           EXEC SQL INCLUDE SQLCA                                       00080001
+           END-EXEC                                                     00090001
+                                                                        00100001
+           EXEC SQL INCLUDE PRELAP                                      00110001
+           END-EXEC                                                     00120001
+                                                                        00130001
+           EXEC SQL INCLUDE PRELAPT                                     00140001
+           END-EXEC                                                     00150001
+                                                                        00160001
+           EXEC SQL INCLUDE PREPAID                                     00170001
+           END-EXEC                                                     00180001
+                                                                        00190001
+           EXEC SQL                                                     00200001
+           DECLARE CS_CUR1 CURSOR WITH HOLD FOR                         00210001
+             SELECT                                                     00220001
+               APPLICANT_ID                                             00230001
+              ,PREMIUM_DATE                                             00240001
+             FROM                                                       00250001
+               PREMIUM_PAID                                             00260001
+           END-EXEC.                                                    00270001
+                                                                        00280001
+           EXEC SQL                                                     00290001
+           DECLARE CS_CUR2 CURSOR WITH HOLD FOR                         00300001
+             SELECT                                                     00310001
+               APPLICANT_ID1                                            00320001
+              ,DATE_TO_BE_PAID                                          00330001
+             FROM                                                       00340001
+               PREMIUM_LAPSED_TEMP                                      00350001
+           END-EXEC.                                                    00360001
+                                                                        00370001
+        01 W01-DATE-TO-BE-PAID          PIC 9(08).                      00380001
+        01 W01-PREMIUM-DATE             PIC 9(08).                      00390001
+        01 W01-CCDATE                   PIC 9(08).                      00400001
+        01 W01-DPDATE                   PIC 9(08).                      00410001
+        01 W01-PP                       PIC 9(08).                      00420001
+        01 W02-PP                       PIC 9(08).                      00430001
+        01 W01-DP                       PIC 9(08).                      00440001
+        01 W02-DP                       PIC 9(08).                      00450001
+        01 W01-DIFFERENCE               PIC 9(02).                      00460001
+        01 W01-DAYS                     PIC 9(08).                      00470001
+        01 W02-DAYS                     PIC 9(08).                      00480001
+        01 W01-CURRENT-DATE             PIC 9(08).                      00490001
+                                                                        00500001
+       PROCEDURE DIVISION.                                              00510001
+                                                                        00520001
+       0000-MAIN-PARA.                                                  00530001
+                                                                        00540001
+           PERFORM 1000-INITIALIZATION-PARA                             00550001
+              THRU 1000-INITIALIZATION-PARA-EXIT                        00560001
+                                                                        00570001
+           PERFORM 2000-PROCESS-PARA                                    00580001
+              THRU 2000-PROCESS-PARA-EXIT                               00590001
+                                                                        00600001
+           PERFORM 9000-TERMINATION-PARA                                00610001
+              THRU 9000-TERMINATION-PARA-EXIT.                          00620001
+                                                                        00630001
+       0000-MAIN-PARA-EXIT.                                             00640001
+           EXIT.                                                        00650001
+                                                                        00660001
+       1000-INITIALIZATION-PARA.                                        00670001
+                                                                        00680001
+           CONTINUE.                                                    00690001
+                                                                        00700001
+       1000-INITIALIZATION-PARA-EXIT.                                   00710001
+           EXIT.                                                        00720001
+                                                                        00730001
+       2000-PROCESS-PARA.                                               00740001
+                                                                        00750001
+           PERFORM 3000-OPEN-CURSOR-PARA                                00760001
+              THRU 3000-OPEN-CURSOR-PARA-EXIT                           00770001
+                                                                        00780001
+           PERFORM 4000-FETCH-PARA                                      00790001
+              THRU 4000-FETCH-PARA-EXIT                                 00800001
+              UNTIL SQLCODE NOT = +000                                  00810001
+                                                                        00820001
+           MOVE +000 TO SQLCODE                                         00830001
+                                                                        00840001
+           PERFORM 4004-FETCH2-PARA                                     00850001
+              THRU 4004-FETCH2-PARA-EXIT                                00860001
+              UNTIL SQLCODE NOT = +000                                  00870001
+                                                                        00880001
+           PERFORM 5000-CLOSE-CURSOR-PARA                               00890001
+              THRU 5000-CLOSE-CURSOR-PARA-EXIT.                         00900001
+                                                                        00910001
+       2000-PROCESS-PARA-EXIT.                                          00920001
+           EXIT.                                                        00930001
+                                                                        00940001
+      * -----------     FOR TABLE 1                                     00950001
+                                                                        00960001
+       3000-OPEN-CURSOR-PARA.                                           00970001
+                                                                        00980001
+           EXEC SQL                                                     00990001
+             OPEN CS_CUR1                                               01000001
+           END-EXEC                                                     01010001
+                                                                        01020001
+           EVALUATE TRUE                                                01030001
+           WHEN SQLCODE = +000                                          01040001
+             CONTINUE                                                   01050001
+           WHEN OTHER                                                   01060001
+             DISPLAY ' ERROR IN OPENING CURSOR1: ' SQLCODE              01070001
+           END-EVALUATE                                                 01080001
+                                                                        01090001
+           EXEC SQL                                                     01100001
+             OPEN CS_CUR2                                               01110001
+           END-EXEC                                                     01120001
+                                                                        01130001
+           EVALUATE TRUE                                                01140001
+           WHEN SQLCODE = +000                                          01150001
+             CONTINUE                                                   01160001
+           WHEN OTHER                                                   01170001
+             DISPLAY ' ERROR IN OPENING CURSOR2: ' SQLCODE              01180001
+           END-EVALUATE.                                                01190001
+                                                                        01200001
+       3000-OPEN-CURSOR-PARA-EXIT.                                      01210001
+           EXIT.                                                        01220001
+                                                                        01230001
+       4000-FETCH-PARA.                                                 01240001
+                                                                        01250001
+           INITIALIZE DCLPREMIUM-PAID                                   01260001
+                      DCLPREMIUM-LAPSED                                 01270001
+                      DCLPREMIUM-LAPSED-TEMP                            01280001
+                                                                        01290001
+           EXEC SQL                                                     01300001
+             FETCH CS_CUR1                                              01310001
+             INTO                                                       01320001
+               :APPLICANT-ID                                            01330001
+              ,:PREMIUM-DATE                                            01340001
+           END-EXEC                                                     01350001
+                                                                        01360001
+           EVALUATE TRUE                                                01370001
+           WHEN SQLCODE = +000                                          01380001
+             DISPLAY ' READ : '                                         01390001
+             PERFORM 4100-PERFORM-PARA                                  01400001
+                THRU 4100-PERFORM-PARA-EXIT                             01410001
+                                                                        01420001
+           WHEN SQLCODE = +100                                          01430001
+             DISPLAY ' NO RECORD '                                      01440001
+             CONTINUE                                                   01450001
+                                                                        01460001
+           WHEN OTHER                                                   01470001
+             DISPLAY ' ERROR IN FETCH CURSOR : ' SQLCODE                01480001
+           END-EVALUATE.                                                01490001
+                                                                        01500001
+       4000-FETCH-PARA-EXIT.                                            01510001
+           EXIT.                                                        01520001
+                                                                        01530001
+       4004-FETCH2-PARA.                                                01540001
+                                                                        01550001
+           DISPLAY ' FETCH 2 PARA : '                                   01560001
+                                                                        01570001
+           EXEC SQL                                                     01580001
+             FETCH CS_CUR2                                              01590001
+             INTO                                                       01600001
+               :APPLICANT-ID1                                           01610001
+              ,:DATE-TO-BE-PAID                                         01620001
+           END-EXEC                                                     01630001
+                                                                        01640001
+           EVALUATE TRUE                                                01650001
+           WHEN SQLCODE = +000                                          01660001
+             DISPLAY ' READ1: '                                         01670001
+             PERFORM 4200-PERFORM-PARA                                  01680001
+                THRU 4200-PERFORM-PARA-EXIT                             01690001
+                                                                        01700001
+           WHEN SQLCODE = +100                                          01710001
+             DISPLAY ' NO RECORD CURSOR 2 : '                           01720001
+             CONTINUE                                                   01730001
+                                                                        01740001
+           WHEN OTHER                                                   01750001
+             DISPLAY ' ERROR IN FETCH CURSOR : ' SQLCODE                01760001
+           END-EVALUATE.                                                01770001
+                                                                        01780001
+       4004-FETCH2-PARA-EXIT.                                           01790001
+           EXIT.                                                        01800001
+                                                                        01810001
+       4100-PERFORM-PARA.                                               01820001
+                                                                        01830001
+           DISPLAY ' PERFORM PARA '                                     01840001
+           DISPLAY ' DATE ' PREMIUM-DATE                                01850001
+                                                                        01860001
+           MOVE PREMIUM-DATE(1:2)       TO W01-DATE-TO-BE-PAID(5:2)     01870001
+           MOVE PREMIUM-DATE(4:2)       TO W01-DATE-TO-BE-PAID(7:2)     01880001
+           MOVE PREMIUM-DATE(7:4)       TO W01-DATE-TO-BE-PAID(1:4)     01890001
+                                                                        01900001
+           ACCEPT W01-CURRENT-DATE FROM DATE YYYYMMDD                   01910001
+                                                                        01920001
+           COMPUTE W01-CCDATE = FUNCTION INTEGER-OF-DATE                01930001
+                               (W01-CURRENT-DATE)                       01940001
+           COMPUTE W01-DPDATE = FUNCTION INTEGER-OF-DATE                01950001
+                               (W01-DATE-TO-BE-PAID)                    01960001
+           IF W01-CCDATE > W01-DPDATE                                   01970001
+           COMPUTE W01-DIFFERENCE = ( W01-CCDATE ) - W01-DPDATE         01980001
+           ELSE                                                         01990001
+           COMPUTE W01-DIFFERENCE = ( W01-DPDATE ) - W01-CCDATE         02000001
+           END-IF                                                       02010001
+                                                                        02020001
+           IF W01-DIFFERENCE > 30                                       02030001
+            DISPLAY ' IF PARA '                                         02040001
+                                                                        02050001
+              EXEC SQL                                                  02060001
+                SELECT                                                  02070001
+                  APPLICANT_NAME                                        02080001
+                 ,DOOR_NO                                               02090001
+                 ,STREET                                                02100001
+                 ,CITY                                                  02110001
+                 ,COUNTRY_CODE                                          02120001
+                 ,PIN                                                   02130001
+                 ,MOBILE                                                02140001
+                 ,DATE_OF_BIRTH                                         02150001
+                 ,GENDER                                                02160001
+                 ,UNIQUE_ID                                             02170001
+                 ,ENROLLED_DATE                                         02180001
+                 ,PREMIUM_DATE                                          02190001
+                INTO                                                    02200001
+                  :APPLICANT-NAME                                       02210001
+                 ,:DOOR-NO                                              02220001
+                 ,:STREET                                               02230001
+                 ,:CITY                                                 02240001
+                 ,:COUNTRY-CODE                                         02250001
+                 ,:PIN                                                  02260001
+                 ,:MOBILE                                               02270001
+                 ,:DATE-OF-BIRTH                                        02280001
+                 ,:GENDER                                               02290001
+                 ,:UNIQUE-ID                                            02300001
+                 ,:ENROLLED-DATE                                        02310001
+                 ,:PREMIUM-DATE                                         02320001
+               FROM                                                     02330001
+                 PREMIUM_PAID                                           02340001
+               WHERE                                                    02350001
+                 APPLICANT_ID=:APPLICANT-ID                             02360001
+               END-EXEC                                                 02370001
+                                                                        02380001
+           EVALUATE TRUE                                                02390001
+           WHEN SQLCODE = +000                                          02400001
+             CONTINUE                                                   02410001
+           WHEN OTHER                                                   02420001
+             DISPLAY ' ERROR IN SELECT2 : ' SQLCODE                     02430001
+           END-EVALUATE                                                 02440001
+                                                                        02450001
+           COMPUTE W01-DP   = FUNCTION INTEGER-OF-DATE                  02460001
+                              (W01-DATE-TO-BE-PAID)                     02470001
+           COMPUTE W02-DP   = W01-DP   + 15                             02480001
+           COMPUTE W01-DATE-TO-BE-PAID = FUNCTION DATE-OF-INTEGER       02490001
+                              (W02-DP)                                  02500001
+                                                                        02510001
+           MOVE W01-DATE-TO-BE-PAID(1:4) TO DATE-TO-BE-PAID(7:4)        02520001
+           MOVE '/'                      TO DATE-TO-BE-PAID(3:1)        02530001
+           MOVE W01-DATE-TO-BE-PAID(7:2) TO DATE-TO-BE-PAID(4:2)        02540001
+           MOVE '/'                      TO DATE-TO-BE-PAID(6:1)        02550001
+           MOVE W01-DATE-TO-BE-PAID(5:2) TO DATE-TO-BE-PAID(1:2)        02560001
+                                                                        02570001
+           PERFORM 4110-INSERT-LAPSEDT-PARA                             02580001
+              THRU 4110-INSERT-LAPSEDT-PARA-EXIT                        02590001
+                                                                        02600001
+             PERFORM 4120-UPDATE-PARA                                   02610001
+                THRU 4120-UPDATE-PARA-EXIT                              02620001
+           END-IF.                                                      02630001
+                                                                        02640001
+       4100-PERFORM-PARA-EXIT.                                          02650001
+           EXIT.                                                        02660001
+                                                                        02670001
+       4110-INSERT-LAPSEDT-PARA.                                        02680001
+                                                                        02690001
+           DISPLAY ' INSERT PARA : '                                    02700001
+           MOVE PREMIUM-DATE(1:2)    TO W01-PREMIUM-DATE(5:2)           02710001
+           MOVE PREMIUM-DATE(4:2)    TO W01-PREMIUM-DATE(7:2)           02720001
+           MOVE PREMIUM-DATE(7:4)    TO W01-PREMIUM-DATE(1:4)           02730001
+                                                                        02740001
+           COMPUTE W01-PP   = FUNCTION INTEGER-OF-DATE                  02750001
+                              (W01-PREMIUM-DATE)                        02760001
+           COMPUTE W02-PP   = W01-PP   + 30                             02770001
+           COMPUTE W01-PREMIUM-DATE = FUNCTION DATE-OF-INTEGER          02780001
+                              (W02-PP)                                  02790001
+                                                                        02800001
+           MOVE W01-PREMIUM-DATE(1:4)    TO PREMIUM-DATE(7:4)           02810001
+           MOVE '/'                      TO PREMIUM-DATE(3:1)           02820001
+           MOVE W01-PREMIUM-DATE(7:2)    TO PREMIUM-DATE(4:2)           02830001
+           MOVE '/'                      TO PREMIUM-DATE(6:1)           02840001
+           MOVE W01-PREMIUM-DATE(5:2)    TO PREMIUM-DATE(1:2)           02850001
+                                                                        02860001
+           EXEC SQL                                                     02870001
+             INSERT INTO PREMIUM_LAPSED_TEMP                            02880001
+             VALUES                                                     02890001
+             (                                                          02900001
+               :APPLICANT-ID                                            02910001
+              ,:APPLICANT-NAME                                          02920001
+              ,:DOOR-NO                                                 02930001
+              ,:STREET                                                  02940001
+              ,:CITY                                                    02950001
+              ,:COUNTRY-CODE                                            02960001
+              ,:PIN                                                     02970001
+              ,:MOBILE                                                  02980001
+              ,:DATE-OF-BIRTH                                           02990001
+              ,:GENDER                                                  03000001
+              ,:UNIQUE-ID                                               03010001
+              ,:ENROLLED-DATE                                           03020001
+              ,:PREMIUM-DATE                                            03030001
+              ,:DATE-TO-BE-PAID                                         03040001
+              )                                                         03050001
+             END-EXEC                                                   03060001
+                                                                        03070001
+           EVALUATE TRUE                                                03080001
+           WHEN SQLCODE = +000                                          03090001
+             CONTINUE                                                   03100001
+           DISPLAY ' AFTER INSERT : ' APPLICANT-ID                      03110001
+                                                                        03120001
+           WHEN OTHER                                                   03130001
+             DISPLAY ' ERROR IN INSERT1 : ' SQLCODE                     03140001
+           END-EVALUATE                                                 03150001
+                                                                        03160001
+           IF W01-DIFFERENCE <= 30                                      03170001
+             PERFORM 4120-UPDATE-PARA                                   03180001
+                THRU 4120-UPDATE-PARA-EXIT                              03190001
+           END-IF.                                                      03200001
+                                                                        03210001
+       4110-INSERT-LAPSEDT-PARA-EXIT.                                   03220001
+           EXIT.                                                        03230001
+                                                                        03240001
+       4120-UPDATE-PARA.                                                03250001
+                                                                        03260001
+              EXEC SQL                                                  03270001
+                SELECT                                                  03280001
+                  APPLICANT_NAME                                        03290001
+                 ,DOOR_NO                                               03300001
+                 ,STREET                                                03310001
+                 ,CITY                                                  03320001
+                 ,COUNTRY_CODE                                          03330001
+                 ,PIN                                                   03340001
+                 ,MOBILE                                                03350001
+                 ,DATE_OF_BIRTH                                         03360001
+                 ,GENDER                                                03370001
+                 ,UNIQUE_ID                                             03380001
+                 ,ENROLLED_DATE                                         03390001
+                 ,PREMIUM_DATE                                          03400001
+               INTO                                                     03410001
+                  :APPLICANT-NAME                                       03420001
+                 ,:DOOR-NO                                              03430001
+                 ,:STREET                                               03440001
+                 ,:CITY                                                 03450001
+                 ,:COUNTRY-CODE                                         03460001
+                 ,:PIN                                                  03470001
+                 ,:MOBILE                                               03480001
+                 ,:DATE-OF-BIRTH                                        03490001
+                 ,:GENDER                                               03500001
+                 ,:UNIQUE-ID                                            03510001
+                 ,:ENROLLED-DATE                                        03520001
+                 ,:PREMIUM-DATE                                         03530001
+               FROM                                                     03540001
+                 PREMIUM_PAID                                           03550001
+               WHERE                                                    03560001
+                 APPLICANT_ID=:APPLICANT-ID                             03570001
+               END-EXEC                                                 03580001
+                                                                        03590001
+           EVALUATE TRUE                                                03600001
+           WHEN SQLCODE = +000                                          03610001
+             CONTINUE                                                   03620001
+           WHEN OTHER                                                   03630001
+             DISPLAY ' ERROR IN SELECT3 : ' SQLCODE                     03640001
+           END-EVALUATE                                                 03650001
+                                                                        03660001
+           MOVE PREMIUM-DATE(1:2)    TO W01-PREMIUM-DATE(5:2)           03670001
+           MOVE PREMIUM-DATE(4:2)    TO W01-PREMIUM-DATE(7:2)           03680001
+           MOVE PREMIUM-DATE(7:4)    TO W01-PREMIUM-DATE(1:4)           03690001
+                                                                        03700001
+           COMPUTE W01-PP   = FUNCTION INTEGER-OF-DATE                  03710001
+                              (W01-PREMIUM-DATE)                        03720001
+           COMPUTE W02-PP   = W01-PP   + 30                             03730001
+           COMPUTE W01-PREMIUM-DATE = FUNCTION DATE-OF-INTEGER          03740001
+                              (W02-PP)                                  03750001
+                                                                        03760001
+           MOVE W01-PREMIUM-DATE(1:4)    TO PREMIUM-DATE(7:4)           03770001
+           MOVE '/'                      TO PREMIUM-DATE(3:1)           03780001
+           MOVE W01-PREMIUM-DATE(7:2)    TO PREMIUM-DATE(4:2)           03790001
+           MOVE '/'                      TO PREMIUM-DATE(6:1)           03800001
+           MOVE W01-PREMIUM-DATE(5:2)    TO PREMIUM-DATE(1:2)           03810001
+                                                                        03820001
+           EXEC SQL                                                     03830001
+             UPDATE PREMIUM_PAID                                        03840001
+             SET                                                        03850001
+               APPLICANT_ID=:APPLICANT-ID                               03860001
+              ,APPLICANT_NAME=:APPLICANT-NAME                           03870001
+              ,DOOR_NO=:DOOR-NO                                         03880001
+              ,STREET=:STREET                                           03890001
+              ,CITY=:CITY                                               03900001
+              ,COUNTRY_CODE=:COUNTRY-CODE                               03910001
+              ,PIN=:PIN                                                 03920001
+              ,MOBILE=:MOBILE                                           03930001
+              ,DATE_OF_BIRTH=:DATE-OF-BIRTH                             03940001
+              ,GENDER=:GENDER                                           03950001
+              ,UNIQUE_ID=:UNIQUE-ID                                     03960001
+              ,ENROLLED_DATE=:ENROLLED-DATE                             03970001
+              ,PREMIUM_DATE=:PREMIUM-DATE                               03980001
+             WHERE                                                      03990001
+               APPLICANT_ID=:APPLICANT-ID                               04000001
+             END-EXEC                                                   04010001
+                                                                        04020001
+           EVALUATE TRUE                                                04030001
+           WHEN SQLCODE = +000                                          04040001
+             CONTINUE                                                   04050001
+             DISPLAY ' UPDATE IS SUCCESSFUL : '                         04060001
+                                                                        04070001
+           WHEN OTHER                                                   04080001
+             DISPLAY ' ERROR IN UPDATE TABLE : ' SQLCODE                04090001
+           END-EVALUATE.                                                04100001
+                                                                        04110001
+       4120-UPDATE-PARA-EXIT.                                           04120001
+           EXIT.                                                        04130001
+                                                                        04140001
+       4200-PERFORM-PARA.                                               04150001
+                                                                        04160001
+           DISPLAY ' DATE FROM TABLE 2 : ' DATE-TO-BE-PAID              04170001
+                                                                        04180001
+           MOVE DATE-TO-BE-PAID(1:2)       TO W01-DATE-TO-BE-PAID(5:2)  04190001
+           MOVE DATE-TO-BE-PAID(4:2)       TO W01-DATE-TO-BE-PAID(7:2)  04200001
+           MOVE DATE-TO-BE-PAID(7:4)       TO W01-DATE-TO-BE-PAID(1:4)  04210001
+                                                                        04220001
+           ACCEPT W01-CURRENT-DATE FROM DATE YYYYMMDD                   04230001
+                                                                        04240001
+           COMPUTE W01-CCDATE = FUNCTION INTEGER-OF-DATE                04250001
+                               (W01-CURRENT-DATE)                       04260001
+           COMPUTE W01-DPDATE = FUNCTION INTEGER-OF-DATE                04270001
+                               (W01-DATE-TO-BE-PAID)                    04280001
+           IF W01-CCDATE > W01-DPDATE                                   04290001
+           COMPUTE W01-DIFFERENCE = ( W01-CCDATE ) - W01-DPDATE         04300001
+           ELSE                                                         04310001
+           COMPUTE W01-DIFFERENCE = ( W01-DPDATE ) - W01-CCDATE         04320001
+           END-IF                                                       04330001
+                                                                        04340001
+              EXEC SQL                                                  04350001
+                SELECT                                                  04360001
+                  APPLICANT_ID1                                         04370001
+                 ,APPLICANT_NAME1                                       04380001
+                 ,DOOR_NO1                                              04390001
+                 ,STREET1                                               04400001
+                 ,CITY1                                                 04410001
+                 ,COUNTRY_CODE1                                         04420001
+                 ,PIN1                                                  04430001
+                 ,MOBILE1                                               04440001
+                 ,DATE_OF_BIRTH1                                        04450001
+                 ,GENDER1                                               04460001
+                 ,UNIQUE_ID1                                            04470001
+                 ,ENROLLED_DATE1                                        04480001
+                 ,PREMIUM_DATE                                          04490001
+                INTO                                                    04500001
+                  :APPLICANT-ID1                                        04510001
+                 ,:APPLICANT-NAME1                                      04520001
+                 ,:DOOR-NO1                                             04530001
+                 ,:STREET1                                              04540001
+                 ,:CITY1                                                04550001
+                 ,:COUNTRY-CODE1                                        04560001
+                 ,:PIN1                                                 04570001
+                 ,:MOBILE1                                              04580001
+                 ,:DATE-OF-BIRTH1                                       04590001
+                 ,:GENDER1                                              04600001
+                 ,:UNIQUE-ID1                                           04610001
+                 ,:ENROLLED-DATE1                                       04620001
+                 ,:PREMIUM-DATE1                                        04630001
+               FROM                                                     04640001
+                 PREMIUM_LAPSED_TEMP                                    04650001
+               WHERE                                                    04660001
+                 APPLICANT_ID1=:APPLICANT-ID1                           04670001
+               END-EXEC                                                 04680001
+                                                                        04690001
+           EVALUATE TRUE                                                04700001
+           WHEN SQLCODE = +000                                          04710001
+           DISPLAY ' DATE FROM TABLE 2 : ' PREMIUM-DATE1                04720001
+             CONTINUE                                                   04730001
+           WHEN OTHER                                                   04740001
+             DISPLAY ' ERROR IN SELECT4 : ' SQLCODE                     04750001
+           END-EVALUATE                                                 04760001
+                                                                        04770001
+           IF W01-DIFFERENCE > 15                                       04780001
+      *    MOVE PREMIUM-DATE1(1:2)    TO W01-PREMIUM-DATE(5:2)          04790001
+      *    MOVE PREMIUM-DATE1(4:2)    TO W01-PREMIUM-DATE(7:2)          04800001
+      *    MOVE PREMIUM-DATE1(7:4)    TO W01-PREMIUM-DATE(1:4)          04810001
+                                                                        04820001
+      *    COMPUTE W01-PP   = FUNCTION INTEGER-OF-DATE                  04830001
+      *                       (W01-PREMIUM-DATE)                        04840001
+      *    COMPUTE W02-PP   = W01-PP   + 30                             04850001
+      *    COMPUTE W01-PREMIUM-DATE = FUNCTION DATE-OF-INTEGER          04860001
+      *                       (W02-PP)                                  04870001
+                                                                        04880001
+      *    MOVE W01-PREMIUM-DATE(1:4)    TO PREMIUM-DATE1(7:4)          04890001
+      *    MOVE '/'                      TO PREMIUM-DATE1(3:1)          04900001
+      *    MOVE W01-PREMIUM-DATE(7:2)    TO PREMIUM-DATE1(4:2)          04910001
+      *    MOVE '/'                      TO PREMIUM-DATE1(6:1)          04920001
+      *    MOVE W01-PREMIUM-DATE(5:2)    TO PREMIUM-DATE1(1:2)          04930001
+                                                                        04940001
+           COMPUTE W01-DP   = FUNCTION INTEGER-OF-DATE                  04950001
+                              (W01-DATE-TO-BE-PAID)                     04960001
+           COMPUTE W02-DP   = W01-DP   + 15                             04970001
+           COMPUTE W01-DATE-TO-BE-PAID = FUNCTION DATE-OF-INTEGER       04980001
+                              (W02-DP)                                  04990001
+                                                                        05000001
+           MOVE W01-DATE-TO-BE-PAID(1:4) TO DATE-TO-BE-PAID(7:4)        05010001
+           MOVE '/'                      TO DATE-TO-BE-PAID(3:1)        05020001
+           MOVE W01-DATE-TO-BE-PAID(7:2) TO DATE-TO-BE-PAID(4:2)        05030001
+           MOVE '/'                      TO DATE-TO-BE-PAID(6:1)        05040001
+           MOVE W01-DATE-TO-BE-PAID(5:2) TO DATE-TO-BE-PAID(1:2)        05050001
+                                                                        05060001
+           MOVE 'A'                      TO LAPSE-INDICATOR             05070001
+           MOVE  1                       TO POLICY-LAPSED-TIMES         05080001
+           MOVE  APPLICANT-ID1           TO APPLICANT-ID2               05090001
+           MOVE  APPLICANT-NAME1         TO APPLICANT-NAME2             05100001
+           MOVE  DOOR-NO1                TO DOOR-NO2                    05110001
+           MOVE  STREET1                 TO STREET2                     05120001
+           MOVE  CITY1                   TO CITY2                       05130001
+           MOVE  COUNTRY-CODE1           TO COUNTRY-CODE2               05140001
+           MOVE  PIN1                    TO PIN2                        05150001
+           MOVE  MOBILE1                 TO MOBILE2                     05160001
+           MOVE  DATE-OF-BIRTH1          TO DATE-OF-BIRTH2              05170001
+           MOVE  GENDER1                 TO GENDER2                     05180001
+           MOVE  UNIQUE-ID1              TO UNIQUE-ID2                  05190001
+           MOVE  ENROLLED-DATE1          TO ENROLLED-DATE2              05200001
+           MOVE  PREMIUM-DATE1           TO PREMIUM-DATE2               05210001
+                                                                        05220001
+           EXEC SQL                                                     05230001
+             INSERT INTO PREMIUM_LAPSED                                 05240001
+             VALUES                                                     05250001
+             (                                                          05260001
+               :APPLICANT-ID2                                           05270001
+              ,:APPLICANT-NAME2                                         05280001
+              ,:DOOR-NO2                                                05290001
+              ,:STREET2                                                 05300001
+              ,:CITY2                                                   05310001
+              ,:COUNTRY-CODE2                                           05320001
+              ,:PIN2                                                    05330001
+              ,:MOBILE2                                                 05340001
+              ,:DATE-OF-BIRTH2                                          05350001
+              ,:GENDER2                                                 05360001
+              ,:UNIQUE-ID2                                              05370001
+              ,:ENROLLED-DATE2                                          05380001
+              ,:PREMIUM-DATE2                                           05390001
+              ,:LAPSE-INDICATOR                                         05400001
+              ,:POLICY-LAPSED-TIMES                                     05410001
+              )                                                         05420001
+             END-EXEC                                                   05430001
+                                                                        05440001
+           EVALUATE TRUE                                                05450001
+           WHEN SQLCODE = +000                                          05460001
+             CONTINUE                                                   05470001
+           DISPLAY ' AFTER INSERT LAPSED : ' APPLICANT-ID1              05480001
+           DISPLAY ' AFTER INSERT LAPSED : ' APPLICANT-NAME1            05490001
+           DISPLAY ' AFTER INSERT LAPSED : ' APPLICANT-ID2              05500001
+           DISPLAY ' AFTER INSERT LAPSED : ' APPLICANT-NAME2            05510001
+           WHEN OTHER                                                   05520001
+             DISPLAY ' ERROR IN INSERT LAPSED : ' SQLCODE               05530001
+           END-EVALUATE                                                 05540001
+                                                                        05550001
+           END-IF                                                       05560001
+                                                                        05570001
+           PERFORM 4300-LAPSE-CALC-PARA                                 05580001
+              THRU 4300-LAPSE-CALC-PARA-EXIT                            05590001
+                                                                        05600001
+           IF W01-DIFFERENCE <= 15                                      05610001
+      *       EXEC SQL                                                  05620001
+      *         SELECT                                                  05630001
+      *           APPLICANT_NAME1                                       05640001
+      *          ,DOOR_NO1                                              05650001
+      *          ,STREET1                                               05660001
+      *          ,CITY1                                                 05670001
+      *          ,COUNTRY_CODE1                                         05680001
+      *          ,PIN1                                                  05690001
+      *          ,MOBILE1                                               05700001
+      *          ,DATE_OF_BIRTH1                                        05710001
+      *          ,GENDER1                                               05720001
+      *          ,UNIQUE_ID1                                            05730001
+      *          ,ENROLLED_DATE1                                        05740001
+      *          ,PREMIUM_DATE                                          05750001
+      *        INTO                                                     05760001
+      *           :APPLICANT-NAME1                                      05770001
+      *          ,:DOOR-NO1                                             05780001
+      *          ,:STREET1                                              05790001
+      *          ,:CITY1                                                05800001
+      *          ,:COUNTRY-CODE1                                        05810001
+      *          ,:PIN1                                                 05820001
+      *          ,:MOBILE1                                              05830001
+      *          ,:DATE-OF-BIRTH1                                       05840001
+      *          ,:GENDER1                                              05850001
+      *          ,:UNIQUE-ID1                                           05860001
+      *          ,:ENROLLED-DATE1                                       05870001
+      *          ,:PREMIUM-DATE1                                        05880001
+      *        FROM                                                     05890001
+      *          PREMIUM_LAPSED_TEMP                                    05900001
+      *        WHERE                                                    05910001
+      *          APPLICANT_ID1=:APPLICANT-ID1                           05920001
+      *        END-EXEC                                                 05930001
+                                                                        05940001
+      *    EVALUATE TRUE                                                05950001
+      *    WHEN SQLCODE = +000                                          05960001
+      *      CONTINUE                                                   05970001
+      *    WHEN OTHER                                                   05980001
+      *      DISPLAY ' ERROR IN SELECT5 : ' SQLCODE                     05990001
+      *    END-EVALUATE                                                 06000001
+                                                                        06010001
+      *    COMPUTE W01-PP   = FUNCTION INTEGER-OF-DATE                  06020001
+      *                       (W01-PREMIUM-DATE)                        06030001
+      *    COMPUTE W02-PP   = W01-PP   + 30                             06040001
+      *    COMPUTE W01-PREMIUM-DATE  = FUNCTION DATE-OF-INTEGER         06050001
+      *                       (W02-PP)                                  06060001
+                                                                        06070001
+      *    MOVE W01-PREMIUM-DATE(1:4)    TO PREMIUM-DATE(7:4)           06080001
+      *    MOVE '/'                      TO PREMIUM-DATE(3:1)           06090001
+      *    MOVE W01-PREMIUM-DATE(7:2)    TO PREMIUM-DATE(4:2)           06100001
+      *    MOVE '/'                      TO PREMIUM-DATE(6:1)           06110001
+      *    MOVE W01-PREMIUM-DATE(5:2)    TO PREMIUM-DATE(1:2)           06120001
+                                                                        06130001
+           EXEC SQL                                                     06140001
+             UPDATE PREMIUM_PAID                                        06150001
+             SET                                                        06160001
+               APPLICANT_ID=:APPLICANT-ID2                              06170001
+              ,APPLICANT_NAME=:APPLICANT-NAME2                          06180001
+              ,DOOR_NO=:DOOR-NO2                                        06190001
+              ,STREET=:STREET2                                          06200001
+              ,CITY=:CITY2                                              06210001
+              ,COUNTRY_CODE=:COUNTRY-CODE2                              06220001
+              ,PIN=:PIN2                                                06230001
+              ,MOBILE=:MOBILE2                                          06240001
+              ,DATE_OF_BIRTH=:DATE-OF-BIRTH2                            06250001
+              ,GENDER=:GENDER2                                          06260001
+              ,UNIQUE_ID=:UNIQUE-ID2                                    06270001
+              ,ENROLLED_DATE=:ENROLLED-DATE1                            06280001
+              ,PREMIUM_DATE=:PREMIUM-DATE2                              06290001
+             WHERE                                                      06300001
+               APPLICANT_ID=:APPLICANT-ID2                              06310001
+             END-EXEC                                                   06320001
+                                                                        06330001
+           EVALUATE TRUE                                                06340001
+           WHEN SQLCODE = +000                                          06350001
+             CONTINUE                                                   06360001
+             DISPLAY ' UPDATE IS SUCCESSFUL : '                         06370001
+                                                                        06380001
+      *    EXEC SQL                                                     06390001
+      *      DELETE FROM PREMIUM_LAPSED                                 06400001
+      *    WHERE                                                        06410001
+      *      APPLICANT_ID2=:APPLICANT-ID2                               06420001
+      *    END-EXEC                                                     06430001
+                                                                        06440001
+           WHEN OTHER                                                   06450001
+             DISPLAY ' ERROR IN UPDATE TABLE : ' SQLCODE                06460001
+           END-EVALUATE                                                 06470001
+                                                                        06480001
+           END-IF.                                                      06490001
+                                                                        06500001
+       4200-PERFORM-PARA-EXIT.                                          06510001
+           EXIT.                                                        06520001
+                                                                        06530001
+       4300-LAPSE-CALC-PARA.                                            06540001
+                                                                        06550001
+           EXEC SQL                                                     06560001
+             SELECT PREMIUM_DATE2                                       06570001
+             INTO  :PREMIUM-DATE2                                       06580001
+             FROM PREMIUM_LAPSED                                        06590001
+             WHERE                                                      06600001
+               APPLICANT_ID2=:APPLICANT-ID2                             06610001
+           END-EXEC                                                     06620001
+                                                                        06630001
+           DISPLAY ' FROM TABLE LAPSED : ' PREMIUM-DATE2                06640001
+                                                                        06650001
+           MOVE PREMIUM-DATE2(1:2)    TO W01-PREMIUM-DATE(5:2)          06660001
+           MOVE PREMIUM-DATE2(4:2)    TO W01-PREMIUM-DATE(7:2)          06670001
+           MOVE PREMIUM-DATE2(7:4)    TO W01-PREMIUM-DATE(1:4)          06680001
+                                                                        06690001
+           COMPUTE W01-CCDATE = FUNCTION INTEGER-OF-DATE                06700001
+                               (W01-CURRENT-DATE)                       06710001
+           COMPUTE W01-DPDATE = FUNCTION INTEGER-OF-DATE                06720001
+                               (W01-PREMIUM-DATE)                       06730001
+           IF W01-CCDATE > W01-DPDATE                                   06740001
+           COMPUTE W01-DIFFERENCE = ( W01-CCDATE ) - W01-DPDATE         06750001
+           ELSE                                                         06760001
+           COMPUTE W01-DIFFERENCE = ( W01-DPDATE ) - W01-CCDATE         06770001
+           END-IF                                                       06780001
+                                                                        06790001
+           IF W01-DIFFERENCE > 15                                       06800001
+              ADD  1  TO POLICY-LAPSED-TIMES                            06810001
+                                                                        06820001
+           IF POLICY-LAPSED-TIMES = 2                                   06830001
+              MOVE 'B' TO LAPSE-INDICATOR                               06840001
+           END-IF                                                       06850001
+                                                                        06860001
+           IF POLICY-LAPSED-TIMES = 3                                   06870001
+              MOVE 'C' TO LAPSE-INDICATOR                               06880001
+           END-IF                                                       06890001
+                                                                        06900001
+           IF POLICY-LAPSED-TIMES = 4                                   06910001
+              MOVE 'D' TO LAPSE-INDICATOR                               06920001
+           END-IF                                                       06930001
+                                                                        06940001
+           IF POLICY-LAPSED-TIMES = 5                                   06950001
+              MOVE 'E' TO LAPSE-INDICATOR                               06960001
+           END-IF                                                       06970001
+                                                                        06980001
+           IF POLICY-LAPSED-TIMES = 6                                   06990001
+              MOVE 'F' TO LAPSE-INDICATOR                               07000001
+           END-IF                                                       07010001
+                                                                        07020001
+           IF POLICY-LAPSED-TIMES = 7                                   07030001
+              MOVE 'G' TO LAPSE-INDICATOR                               07040001
+           END-IF                                                       07050001
+                                                                        07060001
+           IF POLICY-LAPSED-TIMES = 8                                   07070001
+              MOVE 'H' TO LAPSE-INDICATOR                               07080001
+           END-IF                                                       07090001
+                                                                        07100001
+           IF POLICY-LAPSED-TIMES = 9                                   07110001
+              MOVE 'I' TO LAPSE-INDICATOR                               07120001
+           END-IF                                                       07130001
+                                                                        07140001
+           IF POLICY-LAPSED-TIMES = 10                                  07150001
+              MOVE 'J' TO LAPSE-INDICATOR                               07160001
+           END-IF                                                       07170001
+                                                                        07180001
+           IF POLICY-LAPSED-TIMES = 11                                  07190001
+              MOVE 'K' TO LAPSE-INDICATOR                               07200001
+           END-IF                                                       07210001
+                                                                        07220001
+           IF POLICY-LAPSED-TIMES = 12                                  07230001
+              MOVE 'L' TO LAPSE-INDICATOR                               07240001
+           END-IF                                                       07250001
+                                                                        07260001
+           IF POLICY-LAPSED-TIMES = 13                                  07270001
+              MOVE 'M' TO LAPSE-INDICATOR                               07280001
+           END-IF                                                       07290001
+                                                                        07300001
+           IF POLICY-LAPSED-TIMES = 14                                  07310001
+              MOVE 'N' TO LAPSE-INDICATOR                               07320001
+           END-IF                                                       07330001
+                                                                        07340001
+           IF POLICY-LAPSED-TIMES = 15                                  07350001
+              MOVE 'O' TO LAPSE-INDICATOR                               07360001
+           END-IF                                                       07370001
+           END-IF                                                       07380001
+                                                                        07390001
+      *    PERFORM VARYING LAPSE-INDICATOR FROM A THRU O                07400001
+      *    IF LAPSE-INDICATOR > 'A'                                     07410001
+      *    AND LAPSE-INDICATOR < 'O'                                    07420001
+      *      IF W01-DIFFERENCE < 15                                     07430001
+      *         EXEC SQL                                                07440001
+      *           DELETE FROM PREMIUM_LAPSED                            07450001
+      *         WHERE                                                   07460001
+      *           APPLICANT_ID2=:APPLICANT-ID2                          07470001
+      *         END-EXEC                                                07480001
+      *                                                                 07490001
+      *           EVALUATE TRUE                                         07500001
+      *           WHEN SQLCODE = +000                                   07510001
+                    PERFORM 4310-UPDATE-PARA                            07520001
+                       THRU 4310-UPDATE-PARA-EXIT.                      07530001
+                                                                        07540001
+      *           WHEN OTHER                                            07550001
+      *             DISPLAY ' ERROR IN DELETION : ' SQLCODE             07560001
+      *           END-EVALUATE                                          07570001
+      *             END-IF                                              07580001
+      *           END-IF.                                               07590001
+      *           END-PERFORM.                                          07600001
+                                                                        07610001
+       4300-LAPSE-CALC-PARA-EXIT.                                       07620001
+           EXIT.                                                        07630001
+                                                                        07640001
+       4310-UPDATE-PARA.                                                07650001
+                                                                        07660001
+      *       COMPUTE W01-PP   = FUNCTION INTEGER-OF-DATE               07670001
+      *                        (W01-PREMIUM-DATE)                       07680001
+      *       COMPUTE W02-PP   = W01-PP   + 30                          07690001
+      *       COMPUTE W01-PREMIUM-DATE  = FUNCTION DATE-OF-INTEGER      07700001
+      *                       (W02-PP)                                  07710001
+                                                                        07720001
+      *       MOVE W01-PREMIUM-DATE(1:4)    TO PREMIUM-DATE(7:4)        07730001
+      *       MOVE '/'                      TO PREMIUM-DATE(3:1)        07740001
+      *       MOVE W01-PREMIUM-DATE(7:2)    TO PREMIUM-DATE(4:2)        07750001
+      *       MOVE '/'                      TO PREMIUM-DATE(6:1)        07760001
+      *       MOVE W01-PREMIUM-DATE(5:2)    TO PREMIUM-DATE(1:2)        07770001
+                                                                        07780001
+                EXEC SQL                                                07790001
+                  UPDATE PREMIUM_PAID                                   07800001
+                SET                                                     07810001
+                  APPLICANT_ID=:APPLICANT-ID2                           07820001
+                 ,APPLICANT_NAME=:APPLICANT-NAME2                       07830001
+                 ,DOOR_NO=:DOOR-NO2                                     07840001
+                 ,STREET=:STREET2                                       07850001
+                 ,CITY=:CITY2                                           07860001
+                 ,COUNTRY_CODE=:COUNTRY-CODE2                           07870001
+                 ,PIN=:PIN2                                             07880001
+                 ,MOBILE=:MOBILE2                                       07890001
+                 ,DATE_OF_BIRTH=:DATE-OF-BIRTH2                         07900001
+                 ,GENDER=:GENDER2                                       07910001
+                 ,UNIQUE_ID=:UNIQUE-ID2                                 07920001
+                 ,ENROLLED_DATE=:ENROLLED-DATE2                         07930001
+                 ,PREMIUM_DATE=:PREMIUM-DATE2                           07940001
+                WHERE                                                   07950001
+                  APPLICANT_ID=:APPLICANT-ID2                           07960001
+                END-EXEC                                                07970001
+                                                                        07980001
+                  EVALUATE TRUE                                         07990001
+                  WHEN SQLCODE = +000                                   08000001
+                    DISPLAY ' UPDATE TO TABLE 3 IS SUCCESSFUL '         08010001
+                                                                        08020001
+                  WHEN OTHER                                            08030001
+                    DISPLAY ' ERROR IN UPDATE : ' SQLCODE               08040001
+                  END-EVALUATE.                                         08050001
+                                                                        08060001
+       4310-UPDATE-PARA-EXIT.                                           08070001
+           EXIT.                                                        08080001
+                                                                        08090001
+       5000-CLOSE-CURSOR-PARA.                                          08100001
+                   EXEC SQL                                             08110001
+                       CLOSE CS_CUR1                                    08120001
+                   END-EXEC                                             08130001
+                                                                        08140001
+                 EVALUATE TRUE                                          08150001
+                      WHEN SQLCODE = +000                               08160001
+                           CONTINUE                                     08170001
+                      WHEN OTHER                                        08180001
+                           DISPLAY 'ERROR IN CLOSE1' SQLCODE            08190001
+                                                                        08200001
+                 END-EVALUATE                                           08210001
+                                                                        08220001
+                   EXEC SQL                                             08230001
+                       CLOSE CS_CUR2                                    08240001
+                   END-EXEC                                             08250001
+                                                                        08260001
+                 EVALUATE TRUE                                          08270001
+                      WHEN SQLCODE = +000                               08280001
+                           CONTINUE                                     08290001
+                      WHEN OTHER                                        08300001
+                           DISPLAY 'ERROR IN CLOSE2' SQLCODE            08310001
+                                                                        08320001
+                 END-EVALUATE.                                          08330001
+                                                                        08340001
+       5000-CLOSE-CURSOR-PARA-EXIT.                                     08350001
+            EXIT.                                                       08360001
+                                                                        08370001
+       9000-TERMINATION-PARA.                                           08380001
+            STOP RUN.                                                   08390001
+                                                                        08400001
+       9000-TERMINATION-PARA-EXIT.                                      08410001
+            EXIT.                                                       08420001
+

@@ -1,0 +1,53 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001001
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0) RESTART=STEP0002         00002013
+//STEP0001 EXEC PGM=SORT                                                00030001
+//SYSPRINT DD   SYSOUT=*                                                00040001
+//SYSOUT   DD   SYSOUT=*                                                00050001
+//SORTIN   DD   DSN=TCHN007.CLAIM.RPRT1,                                00060019
+//         DISP=SHR                                                     00070001
+//SORTOUT  DD   DSN=TCHN007.CLAIM.REPORT,                               00080019
+//         DISP=(OLD,CATLG,DELETE),                                     00090019
+//         DCB=(LRECL=80,BLKSIZE=8000,RECFM=FB),                        00100001
+//         SPACE=(TRK,(10,10,0),RLSE)                                   00110001
+//SYSIN    DD   *                                                       00120001
+  SORT FIELDS=(1,13,ZD,A)                                               00130002
+  OUTFIL FNAMES=SORTOUT,REMOVECC,                                       00140001
+  HEADER1=(24:C'APPLICANTS DETAIL REPORT',/,                            00150001
+           1:C'DATE:',6:DATE,60:C'PAGE:',65:PAGE,/,                     00160001
+           1:C'TIME:',6:TIME=(24:),/,                                   00170001
+           1:C'PREMIUM PAID DETAILS FOR SEPTEMBER'),                    00180002
+  HEADER2=(1:C'APPLICANTID',X,15:C'NAME',29X,                           00190005
+           48:C'ENROLLED DATE',X,62:C'PAID DATE',/,                     00200014
+           1:C'-------------',X,15:C'-----------------------------',    00210001
+           44:C'---',X,                                                 00220001
+           48:C'------------',X,61:C'-----------------'),               00230003
+  TRAILER2=(1:C'------------------------------END OF PAGE---------',    00240001
+            51:C'------------------------------'),                      00250001
+  BUILD=(1:1,13,X,15:15,32,X,48:147,10,X,61:180,10,10X)                 00260015
+/*                                                                      00270001
+//********************************************************************  00280006
+//STEP0002 EXEC PGM=SORT                                                00290006
+//SYSPRINT DD   SYSOUT=*                                                00300006
+//SYSOUT   DD   SYSOUT=*                                                00310006
+//SORTIN   DD   DSN=TCHN007.CLAIM.RPRT2,                                00320019
+//         DISP=SHR                                                     00330006
+//SORTOUT  DD   DSN=TCHN007.CLAIM.REPORT1,                              00340019
+//         DISP=(OLD,CATLG,DELETE),                                     00350019
+//         DCB=(LRECL=80,BLKSIZE=8000,RECFM=FB),                        00360006
+//         SPACE=(TRK,(10,10,0),RLSE)                                   00370006
+//SYSIN    DD   *                                                       00380006
+  SORT FIELDS=(1,13,ZD,A)                                               00390006
+  OUTFIL FNAMES=SORTOUT,REMOVECC,                                       00400006
+  HEADER1=(24:C'APPLICANTS DETAIL REPORT',/,                            00410006
+           1:C'DATE:',6:DATE,60:C'PAGE:',65:PAGE,/,                     00420006
+           1:C'TIME:',6:TIME=(24:),/,                                   00430006
+           1:C'LAPSED DETAILS FOR SEPTEMBER'),                          00440008
+  HEADER2=(1:C'APPLICANTID',X,15:C'NAME',29X,                           00450006
+           48:C'LAST PREMIUM DATE',X,67:C'LAPSEINDICATOR',/,            00460008
+           1:C'-------------',X,15:C'-----------------------------',    00470006
+           44:C'---',X,                                                 00480006
+           48:C'-----------------',X,67:C'--------------'),             00490012
+  TRAILER2=(1:C'------------------------------END OF PAGE---------',    00500006
+            51:C'------------------------------'),                      00510006
+  BUILD=(1:1,13,X,15:15,32,X,48:147,10,5X,67:169,1,13X)                 00520016
+

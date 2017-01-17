@@ -1,0 +1,84 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00010000
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0),PRTY=15                  00020000
+//**********************************************************************00030000
+//*                          INPUT AREA                                *00040000
+//**********************************************************************00050000
+//* CUSTOMISE THE FOLLOWING                                             00060000
+//*  ENTER MEMBER,USERID,PLANAME  @ BELOW                               00070000
+//**********************************************************************00080000
+// SET MEMBER=CLAIM02C  CLAIM02C           <- MEMBER NAME               00090036
+// SET SOURCE=TCHN007.CLAIM.PDS              - PROGRAM DATASET          00100028
+// SET INCLUDE=TCHN007.CLAIM.PDS              LGEN DATASET              00110028
+// SET LOADLIB=TCHN007.CBEMF010.COBLOAD  <- LOAD LIBRARY                00120000
+// SET DBRMLIB=TCHN007.CBEMF010.DBRM     <- DBRM LIBRARY                00130000
+//*********************************************************             00140000
+//*       DB2 PRECOMPILE THE COBOL PROGRAM                              00150000
+//*********************************************************             00160000
+//PC      EXEC PGM=DSNHPC,                                              00170000
+//       PARM='HOST(IBMCOB),XREF,SOURCE,FLAG(I),APOST'                  00180000
+//STEPLIB  DD  DISP=SHR,DSN=DSN811.SDSNLOAD                             00190000
+//SYSIN    DD  DISP=SHR,DSN=&SOURCE(&MEMBER)                            00200000
+//SYSCIN   DD  DSN=&&DSNHOUT,DISP=(NEW,PASS),UNIT=SYSDA,                00210000
+//             SPACE=(800,(500,500))                                    00220000
+//DBRMLIB  DD  DISP=SHR,DSN=&DBRMLIB(&MEMBER)                           00230000
+//SYSLIB   DD  DISP=SHR,DSN=&INCLUDE                                    00240000
+//SYSPRINT DD  SYSOUT=*                                                 00250000
+//SYSTERM  DD  SYSOUT=*                                                 00260000
+//SYSUDUMP DD  SYSOUT=*                                                 00270000
+//SYSUT1   DD  SPACE=(800,(500,500),,,ROUND),UNIT=SYSDA                 00280000
+//SYSUT2   DD  SPACE=(800,(500,500),,,ROUND),UNIT=SYSDA                 00290000
+//**********************************************************************00300000
+//* COMPILE THE COBOL PROGRAM                                          *00310000
+//**********************************************************************00320000
+//COBCOMP  EXEC PGM=IGYCRCTL,                                           00330000
+//            PARM='LIB,SOURCE'                                         00340000
+//STEPLIB  DD DSN=IGY.SIGYCOMP,DISP=SHR                                 00350000
+//SYSIN    DD  DSN=&&DSNHOUT,DISP=(OLD,DELETE)      <--INPUT SOURCE     00360000
+//SYSPRINT DD  SYSOUT=*                                                 00370000
+//SYSLIN   DD  DSNAME=&&LOADSET,UNIT=SYSDA,         <--OUTPUT OBJECT    00380000
+//             DISP=(MOD,PASS),SPACE=(TRK,(3,3)),                       00390000
+//             DCB=(BLKSIZE=3200)                                       00400000
+//SYSUT1   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00410000
+//SYSUT2   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00420000
+//SYSUT3   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00430000
+//SYSUT4   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00440000
+//SYSUT5   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00450000
+//SYSUT6   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00460000
+//SYSUT7   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00470000
+//**********************************************************************00480000
+//* LINK EDIT THE COBOL PROGRAM                                        *00490000
+//**********************************************************************00500000
+//LINKEDIT EXEC PGM=IEWL,COND=(4,LT,COBCOMP),                           00510000
+//            PARM='LET,AMODE=31,RMODE=ANY,REUS'                        00520000
+//SYSLIB   DD DSN=DSN811.SDSNLOAD,DISP=SHR                              00530000
+//         DD DISP=SHR,DSN=CEE.SCEELKED                                 00540000
+//         DD DISP=SHR,DSN=CEE.SCEERUN                                  00550000
+//         DD DISP=SHR,DSN=&LOADLIB                                     00560000
+//         DD DISP=SHR,DSN=ISP.SISPLOAD                                 00570000
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)                           00580000
+//         DD DDNAME=SYSIN                                              00590000
+//SYSLMOD  DD DISP=SHR,DSN=&LOADLIB(&MEMBER)                            00600000
+//SYSPRINT DD SYSOUT=*                                                  00610000
+//SYSUDUMP DD SYSOUT=*                                                  00620000
+//SYSUT1   DD SPACE=(1043,(50,50)),UNIT=SYSDA <-50 RECDS@1043BYTES EACH 00630000
+//********************************************************************  00640000
+//***    BIND THIS PROGRAM.                                             00650000
+//***    CHANGE THE PLAN NAME,MEMBER NAME AND QUALIFIER                 00660000
+//********************************************************************  00670000
+//BIND    EXEC PGM=IKJEFT01,COND=(5,LT)                                 00680000
+//STEPLIB  DD  DISP=SHR,DSN=DSN811.SDSNLOAD                             00690000
+//DBRMLIB  DD  DISP=SHR,DSN=&DBRMLIB                                    00700000
+//SYSPRINT DD  SYSOUT=*                                                 00710000
+//SYSTSPRT DD  SYSOUT=*                                                 00720000
+//SYSUDUMP DD  SYSOUT=*                                                 00730000
+//SYSTSIN DD *                                                          00740000
+  DSN SYSTEM(DSN1)                                                      00750000
+  BIND PLAN(TCHPL007) -                                                 00760000
+  MEMBER(CLAIM02C) QUALIFIER(TCHN007) ACTION(REPLACE) VALIDATE(BIND)    00770036
+  END                                                                   00782022
+/*                                                                      00790000
+//                                                                      00791021
+  MEMBER(CLAIM02C) QUALIFIER(TCHN007) ACTION(REPLACE) VALIDATE(BIND)    00791131
+  MEMBER(EEEE) QUALIFIER(TCHN007) ACTION(REPLACE) VALIDATE(BIND)        00791232
+  MEMBER(FINMFRP1) QUALIFIER(TCHN007) ACTION(REPLACE) VALIDATE(BIND)    00792026
+

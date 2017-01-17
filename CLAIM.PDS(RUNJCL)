@@ -1,0 +1,15 @@
+//TCHN007$ JOB MSGCLASS=X,MSGLEVEL=(1,1),CLASS=B,                       00001026
+//         REGION=5M,NOTIFY=&SYSUID,TIME=(5,0)                          00002026
+//JOBLIB   DD DSN=TCHN007.CBEMF010.COBLOAD,DISP=SHR                     00030026
+//*GIVE YOUR LOAD LIBRARY NAME ABOVE                                    00040000
+//**********************************************************************00050000
+//*RUN JCL                                                              00060000
+//**********************************************************************00070000
+//TRNS001U EXEC PGM=MFRP1       /*GIVE YOUR MEMBER NAME HERE            00080020
+//SYSPRINT DD   SYSOUT=*                                                00100023
+//SYSOUT   DD   SYSOUT=*                                                00101023
+//BO2ERR   DD   DSN=TCHN291.GEN.ERR,DISP=SHR                            00110023
+//BI1PTR   DD   DSN=TCHN292.GEN.IP3,DISP=SHR                            00120025
+//SYSIN    DD   DUMMY                                                   00121023
+//                                                                      00130000
+
